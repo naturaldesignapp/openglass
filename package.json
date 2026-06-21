@@ -1,0 +1,72 @@
+{
+  "name": "openglass",
+  "version": "0.1.0",
+  "description": "A portable glass material for the web — a displacement-map refraction filter plus rim/glare overlay, built for SVG filters and WebGL alike.",
+  "type": "module",
+  "license": "MIT",
+  "author": "OpenGlass contributors",
+  "homepage": "https://github.com/naturaldesign/openglass#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/naturaldesign/openglass.git"
+  },
+  "bugs": {
+    "url": "https://github.com/naturaldesign/openglass/issues"
+  },
+  "keywords": [
+    "glass",
+    "glassmorphism",
+    "liquid-glass",
+    "refraction",
+    "displacement-map",
+    "svg-filter",
+    "feDisplacementMap",
+    "react",
+    "material",
+    "lens",
+    "frosted",
+    "ui"
+  ],
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "prepublishOnly": "bun run build"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.14",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
