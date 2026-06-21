@@ -1,5 +1,7 @@
 # OpenGlass
 
+**[▶ Live demo](https://naturaldesignapp.github.io/openglass/)** — drag the lens, tune the material.
+
 A portable **glass material** for the web. OpenGlass gives you the two pieces every
 glass/"liquid glass" effect needs and nothing you don't:
 
@@ -217,6 +219,31 @@ bend directed along the rounded-rect edge normal, ramping inward over `depth` px
 with a `curvature` profile, and is 4-fold symmetric (only the top-left quadrant is
 computed, then mirrored). It's super-sampled to `devicePixelRatio` and downscaled
 for a smooth ramp.
+
+---
+
+## Examples
+
+- **[`examples/demo`](./examples/demo)** — the runnable Vite + React app behind the
+  [live demo](https://naturaldesignapp.github.io/openglass/): a draggable lens that
+  refracts a backdrop, with a live material tuner. Run it locally:
+
+  ```bash
+  cd examples/demo
+  bun install
+  bun run dev
+  ```
+
+  Its [`src/GlassLens.tsx`](./examples/demo/src/GlassLens.tsx) is the clearest
+  self-contained implementation of the host pattern.
+
+- **[`examples/reference`](./examples/reference)** — the original editor hosts
+  (`GlassLensDebug`, `CanvasNodeGlass`) OpenGlass was extracted from. Editor-coupled
+  and not runnable standalone, kept as a reference for live-DOM clone sync, per-node
+  glass, and the full WebKit handling.
+
+The demo deploys to GitHub Pages automatically on push to `main`
+(see [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml)).
 
 ---
 
