@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { OPEN_GLASS_DEFAULTS, OPEN_GLASS_PARAMS, type OpenGlassMaterial } from 'openglass'
 import { Backdrop } from './Backdrop'
 import { GlassLens } from './GlassLens'
@@ -31,16 +31,6 @@ function readLensPosFromQuery(): { x: number; y: number } | undefined {
 
 export function App() {
   const [material, setMaterial] = useState<OpenGlassMaterial>(readMaterialFromQuery)
-
-  // TEMP verification hook: `?autoblur=N` flips blur from 0 to N ~1.2s after
-  // mount, reproducing a runtime slider change (to test the WebKit cache bust).
-  useEffect(() => {
-    const raw = new URLSearchParams(window.location.search).get('autoblur')
-    if (raw == null) return
-    const n = Number(raw)
-    const t = window.setTimeout(() => setMaterial((m) => ({ ...m, blur: Number.isFinite(n) ? n : 6 })), 1200)
-    return () => window.clearTimeout(t)
-  }, [])
 
   return (
     <>

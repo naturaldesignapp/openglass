@@ -56,14 +56,14 @@ export function GlassLens({ material, initialPos }: GlassLensProps) {
   )
 
   // WebKit keeps compositing a STALE filter layer when only the filtered
-  // element's DESCENDANTS change — e.g. toggling the source-DOM blur() below at
-  // runtime, or the backdrop copy shifting as the lens is dragged. The
-  // displacement keeps its previous result, so turning on blur looks like it
-  // kills the distortion + chroma. An imperceptible opacity flip on the
+  // element's DESCENDANTS change — e.g. the backdrop copy shifting as the lens
+  // is dragged, or a material tweak re-rendering the source. The displacement
+  // then keeps its previous result. An imperceptible opacity flip on the
   // filtered element invalidates that layer so the filter re-runs against the
   // current source. (GlassLensDebug does this every rAF tick.) An effect is
   // required: it's an imperative, post-paint layer invalidation that can't be
-  // expressed declaratively.
+  // expressed declaratively. (The blur-kills-distortion bug was structural and
+  // is fixed by the flat refracted copy below, not by this nudge.)
   const filteredRef = useRef<HTMLDivElement>(null)
   const nudge = useRef(false)
   useEffect(() => {

@@ -131,7 +131,7 @@ This "clone sync" is host-specific and intentionally left to you.
 
 ## WebKit (Safari / Tauri WKWebView) caveats
 
-WebKit needs two extra considerations that Chromium does not. Use
+WebKit needs three extra considerations that Chromium does not. Use
 `isWebKitEngine()` to gate them.
 
 - **Filter output is cached by `id`.** After a drag, a re-clone, or a material
@@ -150,6 +150,14 @@ WebKit needs two extra considerations that Chromium does not. Use
   why `material.blur` is **not** applied in `<OpenGlassFilter>`. Instead, blur the
   **source DOM** with a CSS `filter: blur(${material.blur}px)` before it reaches
   the displacement filter — positionally exact in every engine.
+
+- **Keep the refracted source free of nested CSS filters.** If the content fed to
+  the displacement filter *itself* contains `filter:` or `backdrop-filter:`
+  elements, WebKit silently bails on the outer displacement the moment the source
+  DOM blur above is stacked on top — the backdrop still blurs but the distortion
+  and chroma vanish. Render the refracted copy without nested `filter` /
+  `backdrop-filter` (a "flat" variant); the visible page behind the lens can keep
+  the full effects. Chromium is unaffected.
 
 The map's data URL is generated at the box's **intrinsic pixel size** on purpose:
 WebKit anchors `feImage` by intrinsic pixels, so a size mismatch shifts the lens.
