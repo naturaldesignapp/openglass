@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   OpenGlassFilter,
   isWebKitEngine,
@@ -6,7 +6,7 @@ import {
   openGlassRadius,
   type OpenGlassMaterial,
 } from 'openglass'
-import { Backdrop } from './Backdrop'
+import { Backdrop, PAGE_BASE_COLOR } from './Backdrop'
 
 // ---------------------------------------------------------------------------
 // A self-contained OpenGlass lens. Same host pattern as the editor's
@@ -29,13 +29,14 @@ function makeFilterId(): string {
 
 interface GlassLensProps {
   material: OpenGlassMaterial
+  initialPos?: { x: number; y: number }
 }
 
-export function GlassLens({ material }: GlassLensProps) {
-  const [pos, setPos] = useState(() => ({
+export function GlassLens({ material, initialPos }: GlassLensProps) {
+  const [pos, setPos] = useState(() => initialPos ?? {
     x: typeof window === 'undefined' ? 240 : Math.round(window.innerWidth / 2 - material.width / 2),
     y: typeof window === 'undefined' ? 160 : Math.round(window.innerHeight * 0.46 - material.height / 2),
-  }))
+  })
   // Keep a ref in lockstep so the drag handler reads the latest position
   // without re-subscribing listeners.
   const posRef = useRef(pos)
@@ -45,13 +46,33 @@ export function GlassLens({ material }: GlassLensProps) {
   const boxH = Math.round(material.height + MARGIN * 2)
   const paneRadius = openGlassRadius(material)
 
-  // WebKit caches filter output by id and can freeze/drop it after a transform
-  // drag; a fresh id forces a rebuild. Shape/bevel changes also need a new map.
+  // A fresh id rebuilds the displacement map when the shape/bevel changes, and
+  // (via webkitEpoch) forces a rebuild after a drag, which WebKit can otherwise
+  // serve stale.
   const [webkitEpoch, setWebkitEpoch] = useState(0)
   const filterId = useMemo(
     () => makeFilterId(),
     [material.width, material.height, material.borderRadius, material.depth, material.curvature, material.splay, webkitEpoch],
   )
+
+  // WebKit keeps compositing a STALE filter layer when only the filtered
+  // element's DESCENDANTS change — e.g. toggling the source-DOM blur() below at
+  // runtime, or the backdrop copy shifting as the lens is dragged. The
+  // displacement keeps its previous result, so turning on blur looks like it
+  // kills the distortion + chroma. An imperceptible opacity flip on the
+  // filtered element invalidates that layer so the filter re-runs against the
+  // current source. (GlassLensDebug does this every rAF tick.) An effect is
+  // required: it's an imperative, post-paint layer invalidation that can't be
+  // expressed declaratively.
+  const filteredRef = useRef<HTMLDivElement>(null)
+  const nudge = useRef(false)
+  useEffect(() => {
+    if (!IS_WEBKIT) return
+    const el = filteredRef.current
+    if (!el) return
+    nudge.current = !nudge.current
+    el.style.opacity = nudge.current ? '0.9999' : '1'
+  }, [material, pos.x, pos.y])
 
   const onDragPointerDown = (event: React.PointerEvent) => {
     event.preventDefault()
@@ -98,20 +119,30 @@ export function GlassLens({ material }: GlassLensProps) {
           WebkitClipPath: `inset(${MARGIN}px round ${paneRadius}px)`,
         }}
       >
+        {/* The displacement layer. Mirrors GlassLensDebug's `filteredRef`:
+            overflow:hidden bounds the FILTER SOURCE to the box (WebKit silently
+            skips the filter if the painted source overruns its size ceiling),
+            and an opaque background gives WebKit a solid raster to flatten the
+            subtree into. The backdrop copy covers it, so it's never seen. */}
         <div
+          ref={filteredRef}
           style={{
             position: 'absolute',
             inset: 0,
-            // Bound the filter's painted source to the box so WebKit doesn't
-            // skip the filter when the backdrop copy overflows.
             overflow: 'hidden',
+            background: PAGE_BASE_COLOR,
             filter: `url(#${filterId})`,
             WebkitFilter: `url(#${filterId})`,
           }}
         >
-          {/* A copy of the backdrop, shifted so its viewport origin lands at the
-              real viewport origin — it aligns under the lens. Blur the source
-              DOM (not feGaussianBlur) so WebKit doesn't shift the refraction. */}
+          {/* Source-DOM blur lives HERE, on a single overflow:visible host that
+              is offset so the backdrop copy's viewport origin lands back at the
+              real viewport origin (it aligns under the lens). This mirrors
+              GlassLensDebug's `cloneHost` exactly. The blur must NOT sit on an
+              overflow:hidden / box-clipped element: that promotes it to its own
+              composited layer on WebKit, the parent displacement then samples an
+              empty source, and the distortion + chroma vanish while blur stays.
+              CSS blur (not feGaussianBlur, which shifts the refraction). */}
           <div
             style={{
               position: 'absolute',
@@ -119,11 +150,13 @@ export function GlassLens({ material }: GlassLensProps) {
               top: -winY,
               width: '100vw',
               height: '100vh',
+              overflow: 'visible',
+              pointerEvents: 'none',
               filter: material.blur > 0 ? `blur(${material.blur}px)` : undefined,
               WebkitFilter: material.blur > 0 ? `blur(${material.blur}px)` : undefined,
             }}
           >
-            <Backdrop />
+            <Backdrop flat />
           </div>
         </div>
       </div>
