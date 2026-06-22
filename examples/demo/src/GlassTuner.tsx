@@ -7,7 +7,7 @@ interface GlassTunerProps {
   onChange: (next: OpenGlassMaterial) => void
 }
 
-/** Live material editor — one slider per OPEN_GLASS_PARAM. */
+/** Live material editor — one slider per OPEN_GLASS_PARAM. ND card styling. */
 export function GlassTuner({ material, onChange }: GlassTunerProps) {
   const [copied, setCopied] = useState(false)
 
@@ -20,26 +20,16 @@ export function GlassTuner({ material, onChange }: GlassTunerProps) {
   return (
     <div
       style={{
-        position: 'fixed',
-        left: '50%',
-        bottom: 20,
-        transform: 'translateX(-50%)',
-        zIndex: 20,
-        width: 640,
-        maxWidth: 'calc(100vw - 32px)',
-        padding: '12px 18px 16px',
-        borderRadius: 16,
-        background: 'var(--og-panel)',
-        border: '1px solid var(--og-border)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
-        color: 'var(--og-text)',
-        fontSize: 12,
+        padding: 22,
+        borderRadius: 12,
+        background: '#fff',
+        border: '1px solid var(--nd-hair)',
+        color: 'var(--nd-ink)',
+        fontSize: 13,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <span style={{ fontWeight: 600, letterSpacing: 0.2 }}>OpenGlass material</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <span style={{ fontWeight: 500 }}>Material</span>
         <div style={{ display: 'flex', gap: 8 }}>
           <button type="button" className="og-button" onClick={() => onChange(OPEN_GLASS_DEFAULTS)}>
             Reset
@@ -49,37 +39,24 @@ export function GlassTuner({ material, onChange }: GlassTunerProps) {
           </button>
         </div>
       </div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          columnGap: 28,
-          rowGap: 9,
-        }}
-      >
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', columnGap: 22, rowGap: 16 }}>
         {OPEN_GLASS_PARAMS.map((param) => {
           const value = material[param.key]
           const factor = 10 ** param.decimals
           return (
-            <div
-              key={param.key}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '104px 1fr 44px',
-                alignItems: 'center',
-                gap: 10,
-              }}
-            >
-              <span style={{ color: 'var(--og-text-dim)', whiteSpace: 'nowrap' }}>{param.label}</span>
+            <div key={param.key} style={{ display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+                <span style={{ color: 'var(--nd-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{param.label}</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--nd-ink)', fontWeight: 500 }}>
+                  {value.toFixed(param.decimals)}
+                </span>
+              </div>
               <Slider
                 value={value}
                 min={param.min}
                 max={param.max}
                 onChange={(next) => onChange({ ...material, [param.key]: Math.round(next * factor) / factor })}
               />
-              <span style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                {value.toFixed(param.decimals)}
-              </span>
             </div>
           )
         })}

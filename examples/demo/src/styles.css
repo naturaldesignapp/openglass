@@ -1,10 +1,76 @@
+/* ===========================================================================
+ * OpenGlass demo — Natural Design language.
+ *
+ * Base aesthetic is Natural Design's marketing surface: light "paper" whites,
+ * warm-neutral hairlines, a single blue accent, regular-weight headings,
+ * generous gutters, pill controls. The base typeface is ND's own Neue Haas
+ * Grotesk. Historical design movements appear only as ACCENTS — a period
+ * display face on an era title, an era's colour. Tokens mirror
+ * naturaldesign.app's homepage + editor foundation.
+ * ======================================================================== */
+
+/* === Neue Haas Grotesk — the Natural Design base voice (self-hosted) ===== */
+@font-face {
+  font-family: 'Neue Haas Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/neueHaas.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Neue Haas Grotesk';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/neueHaas-Italic.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Neue Haas Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./fonts/neueHaas-Medium.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Neue Haas Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./fonts/neueHaas-Bold.ttf') format('truetype');
+}
+
 :root {
-  --og-panel: rgba(24, 24, 26, 0.92);
-  --og-border: rgba(255, 255, 255, 0.1);
-  --og-text: rgba(255, 255, 255, 0.86);
-  --og-text-dim: rgba(255, 255, 255, 0.5);
-  --og-accent: #7dd3fc;
-  color-scheme: dark;
+  /* Natural Design — marketing/paper surface */
+  --nd-bg: #ffffff;
+  --nd-panel: #fafaf6;
+  --nd-panel-2: #f7f7f3;
+  --nd-rule: #e7e7d8;
+  --nd-hair: #d8d8d0;
+  --nd-ink: #08090a;
+  --nd-text: #050505;
+  --nd-muted: #61615c;
+  --nd-faint: #777770;
+  --nd-soft: #dddddd;
+  --nd-accent: #2592fe;
+  --nd-brand: #343434;
+
+  --nd-gutter: clamp(20px, 5vw, 72px);
+  --nd-header-h: 60px;
+  --nd-header-pill-hover: color-mix(in oklab, var(--nd-text) 24%, #ffffff);
+
+  /* Type — Neue Haas Grotesk (the ND base voice). */
+  --font-sans: 'Neue Haas Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+
+  /* Period accent faces — used sparingly, one per era of the story. */
+  --font-roman: 'Cinzel', 'Times New Roman', serif;
+  --font-gothic: 'UnifrakturCook', 'Cinzel', serif;
+  --font-renaissance: 'EB Garamond', Georgia, serif;
+  --font-victorian: 'Playfair Display', Georgia, serif;
+
+  /* Easing — smooth ease-out (no bounce/elastic on UI). */
+  --ease-out-smooth: cubic-bezier(0.685, 0.89, 0.315, 0.995);
+
+  color-scheme: light;
 }
 
 * {
@@ -12,79 +78,281 @@
 }
 
 html,
-body,
+body {
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 #root {
   margin: 0;
-  height: 100%;
 }
 
 body {
-  overflow: hidden;
-  background: #050507;
-  color: var(--og-text);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--nd-bg);
+  color: var(--nd-text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv11' 1, 'ss01' 1;
 }
 
-/* Reusable range input — part of the demo's tiny design system. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* --- Reusable primitives (a tiny design system shared across sections) --- */
+
+.nd-kicker {
+  margin: 0;
+  color: var(--nd-accent);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Display heading — ND headings are regular weight, tight leading. */
+.nd-display {
+  margin: 0;
+  color: #000;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  line-height: 1.05;
+}
+
+/* Comfortable reading measure for body copy (keeps lines under ~72ch). */
+.nd-measure {
+  max-width: 64ch;
+}
+
+.nd-link {
+  color: var(--nd-accent);
+  text-decoration: none;
+}
+
+.nd-link:hover {
+  text-decoration: underline;
+}
+
+/* Pill buttons (outline + solid), matching the ND header controls. */
+.nd-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--nd-brand);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.nd-pill:hover {
+  border-color: var(--nd-header-pill-hover);
+}
+
+.nd-pill-solid {
+  background: var(--nd-brand);
+  color: #fff;
+  border-color: transparent;
+}
+
+.nd-pill-solid:hover {
+  background: color-mix(in oklab, var(--nd-brand) 92%, #000);
+  border-color: transparent;
+}
+
+.nd-pill:focus-visible,
+.nd-link:focus-visible {
+  outline: 2px solid var(--nd-accent);
+  outline-offset: 2px;
+}
+
+/* --- Brand wordmark + the ND hover "flicker" animation -------------------- */
+.nd-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  width: fit-content;
+  color: var(--nd-brand);
+  text-decoration: none;
+}
+
+.nd-brand svg {
+  display: block;
+}
+
+.nd-brand-piece {
+  fill: currentColor;
+  opacity: 1;
+}
+
+.nd-brand:hover .nd-brand-piece {
+  animation: nd-brand-piece 1200ms var(--ease-out-smooth);
+}
+
+@keyframes nd-brand-piece {
+  0%,
+  10% {
+    opacity: 0.16;
+  }
+  28%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nd-brand:hover .nd-brand-piece {
+    animation: none;
+  }
+}
+
+/* --- Glassy header surface (ported from the ND marketing header) --------- */
+.nd-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: var(--nd-header-h);
+  padding: 0 var(--nd-gutter);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, #ffffff 82%, transparent) 0%,
+    color-mix(in oklab, var(--nd-panel) 52%, transparent) 100%
+  );
+  border-bottom: 1px solid color-mix(in oklab, var(--nd-rule) 55%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, #ffffff 65%, transparent),
+    0 1px 0 color-mix(in oklab, #ffffff 35%, transparent);
+  -webkit-backdrop-filter: blur(28px) saturate(1.35);
+  backdrop-filter: blur(28px) saturate(1.35);
+}
+
+/* --- Numeric switch buttons (Try-it image picker) ------------------------ */
+.og-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--nd-hair);
+  background: #fff;
+  color: var(--nd-muted);
+  font: inherit;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.og-num:hover {
+  border-color: var(--nd-header-pill-hover);
+  color: var(--nd-ink);
+}
+
+.og-num[aria-pressed='true'] {
+  background: var(--nd-ink);
+  border-color: var(--nd-ink);
+  color: #fff;
+}
+
+.og-num:focus-visible {
+  outline: 2px solid var(--nd-accent);
+  outline-offset: 2px;
+}
+
+/* Range input — filled-track variant so the control reads clearly on paper. */
 .og-slider {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
+  height: 18px;
+  background: transparent;
   outline: none;
   cursor: pointer;
+}
+
+.og-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--nd-ink) var(--fill, 0%),
+    rgba(8, 9, 10, 0.14) var(--fill, 0%)
+  );
+}
+
+.og-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(8, 9, 10, 0.14);
+}
+
+.og-slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--nd-ink);
 }
 
 .og-slider::-webkit-slider-thumb {
   appearance: none;
   -webkit-appearance: none;
+  margin-top: -5px;
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #fff;
-  border: none;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  background: var(--nd-ink);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
 }
 
 .og-slider::-moz-range-thumb {
   width: 14px;
   height: 14px;
-  border: none;
+  border: 2px solid #fff;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  background: var(--nd-ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
 }
 
-.og-slider:focus-visible {
-  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.35);
+.og-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--nd-accent) 32%, transparent);
 }
 
 .og-button {
   appearance: none;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 11px;
-  padding: 4px 11px;
+  border: 1px solid rgba(8, 9, 10, 0.14);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--nd-ink);
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 13px;
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease;
 }
 
 .og-button:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.22);
-}
-
-.og-link {
-  color: var(--og-accent);
-  text-decoration: none;
-}
-
-.og-link:hover {
-  text-decoration: underline;
+  background: var(--nd-panel);
+  border-color: rgba(8, 9, 10, 0.26);
 }

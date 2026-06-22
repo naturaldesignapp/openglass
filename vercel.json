@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "true",
+  "buildCommand": "cd examples/demo && bun install && bun run build",
+  "outputDirectory": "examples/demo/dist",
+  "cleanUrls": true,
+  "redirects": [{ "source": "/openglass", "destination": "/openglass/", "permanent": false }],
+  "rewrites": [{ "source": "/openglass/(.*)", "destination": "/$1" }]
+}
