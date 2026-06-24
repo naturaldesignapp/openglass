@@ -37,7 +37,17 @@ const MARK_ROOT_TRANSFORM = 'matrix(1,0,0,1,3889.33,2714.46)'
 const MARK_SCALE_TRANSFORM = 'matrix(0.674081,0,0,0.674081,-3433.25,-2783.18)'
 const MARK_PIECES_TRANSFORM = 'matrix(0.167239,0,0,0.167239,-683.848,-15.0228)'
 
-function MarkPaths({ fill = 'currentColor', className }: { fill?: string; className?: string }) {
+function MarkPaths({
+  fill = 'currentColor',
+  stroke,
+  strokeWidth,
+  className,
+}: {
+  fill?: string
+  stroke?: string
+  strokeWidth?: number
+  className?: string
+}) {
   return (
     <g transform={MARK_ROOT_TRANSFORM}>
       <g transform={MARK_SCALE_TRANSFORM}>
@@ -48,6 +58,8 @@ function MarkPaths({ fill = 'currentColor', className }: { fill?: string; classN
               className={className}
               d={piece.d}
               fill={fill}
+              stroke={stroke}
+              strokeWidth={strokeWidth}
               transform={piece.transform}
               style={className ? { animationDelay: `${index * 48}ms` } : undefined}
             />
@@ -108,6 +120,40 @@ export function drawMarkSilhouette(ctx: CanvasRenderingContext2D, width: number,
     ctx.restore()
   }
   ctx.restore()
+}
+
+/** Light stroke frame so the glass mark reads on white. */
+export function GlassMarkOutline({
+  width,
+  height,
+  style,
+}: {
+  width: number
+  height: number
+  style?: CSSProperties
+}) {
+  return (
+    <svg
+      aria-hidden
+      width={width}
+      height={height}
+      viewBox={MARK_VIEWBOX}
+      focusable="false"
+      xmlns="http://www.w3.org/2000/svg"
+      style={style}
+    >
+      <MarkPaths fill="none" stroke="rgba(0,0,0,0.14)" strokeWidth={1.1} />
+    </svg>
+  )
+}
+
+/** Drop shadow that follows the mark silhouette. */
+export function glassMarkShadowStyle(): CSSProperties {
+  const shadow = [
+    'drop-shadow(0 10px 28px rgba(0,0,0,0.11))',
+    'drop-shadow(0 3px 10px rgba(0,0,0,0.07))',
+  ].join(' ')
+  return { filter: shadow, WebkitFilter: shadow }
 }
 
 /**

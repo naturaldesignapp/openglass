@@ -18,13 +18,16 @@ import {
   usePrefersReducedMotion,
   type OpenGlassMaterial,
 } from 'openglass'
-import { drawMarkSilhouette, glassMarkMaskStyle } from './NaturalDesignLogo'
+import { drawMarkSilhouette, GlassMarkOutline, glassMarkMaskStyle, glassMarkShadowStyle } from './NaturalDesignLogo'
 import { PageBackdropClone, pageBackdropColor, pageBackdropIsWebKit } from './PageBackdropClone'
 import { RefractingLens } from './RefractingLens'
 
 const IS_WEBKIT = isWebKitEngine()
 const MARK_ASPECT = 89 / 70
-const MARGIN = 28
+// Must exceed the max rim displacement (scale × 2 × (1 + chroma) ≈ 43px) so the
+// bevel always samples real content. Too small and edges touching the box rim —
+// like the top hexagon's apex — pull in empty pixels and render as opaque white.
+const MARGIN = 56
 const DRIFT_DELAY_MS = 3200
 const DRIFT_DURATION_S = 1.35
 const LENS_Z = 30
@@ -218,11 +221,23 @@ export function DriftingGlassMark({ variant = 'close', style, className }: Drift
           renderScene={() => <PageBackdropClone onReclone={onReclone} />}
           position="fixed"
           zIndex={LENS_Z}
-          boxMask={glassMarkMaskStyle(material, MARGIN, MARGIN)}
+          boxMask={{ ...glassMarkMaskStyle(material, MARGIN, MARGIN), ...glassMarkShadowStyle() }}
           overlayMask={glassMarkMaskStyle(material, 0, 0)}
           invalidateKey={`${Math.round(paneX)},${Math.round(paneY)},${scroll.x},${scroll.y},${epoch}`}
-          overlayStyle={{ cursor: 'grab', touchAction: 'none' }}
+          overlayStyle={{ cursor: 'grab', touchAction: 'none', zIndex: LENS_Z + 2 }}
           onOverlayPointerDown={onPointerDown}
+        />
+        <GlassMarkOutline
+          width={material.width}
+          height={material.height}
+          style={{
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            transform: `translate3d(${paneX}px, ${paneY}px, 0)`,
+            zIndex: LENS_Z + 1,
+            pointerEvents: 'none',
+          }}
         />
       </div>
     ) : null
