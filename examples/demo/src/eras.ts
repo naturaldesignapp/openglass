@@ -127,5 +127,5 @@ export interface MergeBeat {
 export const MERGE_BEAT: MergeBeat = {
   title: 'OpenGlass',
   accent: '#2592fe',
-  body: 'Glass you look through became glass you look at. The screen is a sheet of glass, and the interface is drawn on it. OpenGlass is that material, made portable, from Natural Design.',
+  body: 'Screens are glass with interfaces drawn on them. OpenGlass renders that surface on the web, from Natural Design.',
 }

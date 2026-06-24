@@ -3,6 +3,7 @@ export {
   OPEN_GLASS_PARAMS,
   isWebKitEngine,
   makeOpenGlassDisplacementMap,
+  makeOpenGlassShapeMap,
   openGlassOverlayStyle,
   openGlassRadius,
   type OpenGlassMaterial,

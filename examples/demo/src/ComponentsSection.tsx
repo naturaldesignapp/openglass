@@ -55,8 +55,8 @@ export function ComponentsSection() {
           className="nd-measure"
           style={{ maxWidth: '48ch', marginTop: 14, color: 'var(--nd-muted)', fontSize: 15, lineHeight: 1.5 }}
         >
-          The thumb and handle are real OpenGlass lenses — each one bends the track beneath it as it
-          moves, in Chrome, Safari and Firefox. Press, drag, or tap to bloom the glass.
+          The thumb and handle are OpenGlass lenses — each bends the track beneath it as it moves,
+          in Chrome, Safari, and Firefox. Press, drag, or tap to expand the lens.
         </p>
       </div>
 

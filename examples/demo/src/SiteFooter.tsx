@@ -17,11 +17,11 @@ export function SiteFooter() {
         fontSize: 13,
       }}
     >
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, color: 'var(--nd-brand)' }}>
-        <NaturalDesignWordmark style={{ display: 'block', width: 78, height: 'auto' }} aria-hidden />
-        <span aria-hidden style={{ width: 1, height: 16, background: 'var(--nd-hair)' }} />
-        <span style={{ color: 'var(--nd-muted)' }}>OpenGlass - By Natural Design</span>
-      </div>
+      <a href="#top" aria-label="OpenGlass, a Natural Design package" className="nd-brand">
+        <NaturalDesignWordmark style={{ width: 88, height: 'auto' }} aria-hidden />
+        <span aria-hidden style={{ width: 1, height: 18, background: 'var(--nd-hair)' }} />
+        <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--nd-ink)', letterSpacing: '-0.01em' }}>OpenGlass</span>
+      </a>
       <nav aria-label="Footer" style={{ display: 'flex', gap: 18 }}>
         <a className="nd-link" style={{ color: 'var(--nd-muted)' }} href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
         <a className="nd-link" style={{ color: 'var(--nd-muted)' }} href="https://www.naturaldesign.app/homepage" target="_blank" rel="noreferrer">Natural Design</a>

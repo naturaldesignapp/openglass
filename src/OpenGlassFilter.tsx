@@ -16,6 +16,12 @@ export interface OpenGlassFilterProps {
    * pane centred, and must clip its painted source (`overflow: hidden`).
    */
   margin: number
+  /**
+   * A prebuilt displacement map (data URL) to use instead of the rounded-rect
+   * map derived from `material`. Pass one from {@link makeOpenGlassShapeMap} to
+   * refract along an arbitrary silhouette.
+   */
+  mapUrl?: string
 }
 
 /**
@@ -26,14 +32,15 @@ export interface OpenGlassFilterProps {
  * `filter: url(#id)`. See the OpenGlass docs for the cross-browser layout
  * rules the host must follow.
  */
-export function OpenGlassFilter({ id, material, margin }: OpenGlassFilterProps) {
+export function OpenGlassFilter({ id, material, margin, mapUrl }: OpenGlassFilterProps) {
   const boxW = Math.round(material.width + margin * 2)
   const boxH = Math.round(material.height + margin * 2)
-  const mapUrl = useMemo(
-    () => makeOpenGlassDisplacementMap(material, margin),
+  const generatedMap = useMemo(
+    () => (mapUrl ? '' : makeOpenGlassDisplacementMap(material, margin)),
     // Only shape/bevel parameters live in the map; the rest are filter attrs.
-    [material.width, material.height, material.borderRadius, material.depth, material.curvature, material.splay, material.dome, margin],
+    [mapUrl, material.width, material.height, material.borderRadius, material.depth, material.curvature, material.splay, material.dome, margin],
   )
+  const map = mapUrl || generatedMap
   const baseScale = material.scale * 2
   const chroma = material.chroma
   // NB: `material.blur` is intentionally NOT applied here. WebKit's feGaussianBlur
@@ -56,7 +63,7 @@ export function OpenGlassFilter({ id, material, margin }: OpenGlassFilterProps) 
         colorInterpolationFilters="sRGB"
       >
         <feImage
-          href={mapUrl}
+          href={map}
           x="0"
           y="0"
           width={boxW}

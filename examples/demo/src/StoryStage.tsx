@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { openGlassOverlayStyle, type OpenGlassMaterial } from 'openglass'
 import { CopyInstall } from './CopyInstall'
 import { DESIGN_BEATS, ERA_FONT, GLASS_BEATS, MERGE_BEAT, type Beat } from './eras'
 
@@ -120,22 +119,6 @@ function Track({
   )
 }
 
-const CLOSE_MATERIAL: OpenGlassMaterial = {
-  width: 200,
-  height: 200,
-  borderRadius: 100,
-  scale: 30,
-  depth: 41,
-  curvature: 2.8,
-  splay: -1,
-  dome: 0.45,
-  chroma: 0.06,
-  blur: 0,
-  glow: 0.34,
-  edgeHighlight: 0.6,
-  specularAngle: 325,
-}
-
 // The synthesis, as a normal section that scrolls up beneath the pinned stage.
 function OpenGlassClose() {
   return (
@@ -149,16 +132,6 @@ function OpenGlassClose() {
       }}
     >
       <div style={{ width: 'min(720px, 100%)', textAlign: 'center' }}>
-        <div
-          aria-hidden
-          style={{
-            width: CLOSE_MATERIAL.width,
-            height: CLOSE_MATERIAL.height,
-            margin: '0 auto 40px',
-            ...openGlassOverlayStyle(CLOSE_MATERIAL),
-            background: `radial-gradient(120% 120% at 30% 22%, rgba(10,33,245,0.32), rgba(233,219,255,0.2) 60%, rgba(255,255,255,0.08)), ${openGlassOverlayStyle(CLOSE_MATERIAL).background as string}`,
-          }}
-        />
         <p className="nd-kicker" style={{ color: DESIGN_BLUE }}>Where the two meet</p>
         <h2 className="nd-display" style={{ marginTop: 14, fontSize: 'clamp(48px, 9vw, 116px)', letterSpacing: '-0.02em' }}>
           {MERGE_BEAT.title}

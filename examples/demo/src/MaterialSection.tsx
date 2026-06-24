@@ -1,7 +1,6 @@
 import { CopyInstall } from './CopyInstall'
 
-// A four-stage pipeline, in the order the pixels actually flow. Numbers earn
-// their place here because it is a real sequence.
+// Four-stage pipeline, in pixel order.
 const STEPS = [
   {
     n: '01',
@@ -66,7 +65,7 @@ export function MaterialSection() {
       <div style={{ marginTop: 28, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
         <CopyInstall variant="ghost" />
         <span style={{ color: 'var(--nd-faint)', fontSize: 14 }}>
-          The map is a data URL and the overlay is plain CSS, so the same material drops into any host you compose. Zero dependencies.
+          The map is a data URL and the overlay is plain CSS — same material, any element. No dependencies.
         </span>
       </div>
     </section>

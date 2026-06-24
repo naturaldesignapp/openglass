@@ -13,6 +13,8 @@ interface RefractingLensProps {
   material: OpenGlassMaterial
   margin: number
   filterId: string
+  /** Prebuilt displacement map (e.g. a silhouette map) for the filter. */
+  mapUrl?: string
   /** Top-left of the filtered window (pane − margin) in the parent's coords. */
   winX: number
   winY: number
@@ -34,6 +36,13 @@ interface RefractingLensProps {
   /** Extra style + interactions for the (unfiltered) overlay / drag handle. */
   overlayStyle?: CSSProperties
   onOverlayPointerDown?: (event: PointerEvent) => void
+  /**
+   * Mask the filtered box / overlay to an arbitrary silhouette (CSS mask-image
+   * style) instead of clipping to a rounded rect. When set, the default inset
+   * clip is dropped so the mask defines the shape.
+   */
+  boxMask?: CSSProperties
+  overlayMask?: CSSProperties
 }
 
 /**
@@ -46,6 +55,7 @@ export function RefractingLens({
   material,
   margin,
   filterId,
+  mapUrl,
   winX,
   winY,
   sceneWidth,
@@ -57,10 +67,13 @@ export function RefractingLens({
   invalidateKey,
   overlayStyle,
   onOverlayPointerDown,
+  boxMask,
+  overlayMask,
 }: RefractingLensProps) {
   const boxW = Math.round(material.width + margin * 2)
   const boxH = Math.round(material.height + margin * 2)
   const paneRadius = openGlassRadius(material)
+  const useMask = Boolean(boxMask)
 
   const filteredRef = useRef<HTMLDivElement>(null)
   const nudge = useRef(false)
@@ -76,7 +89,7 @@ export function RefractingLens({
 
   return (
     <>
-      <OpenGlassFilter id={filterId} material={material} margin={margin} />
+      <OpenGlassFilter id={filterId} material={material} margin={margin} mapUrl={mapUrl} />
 
       {/* Filtered window: pane + margin, clipped to the pane shape on this
           (parent) element — clip-path stays off the filtered child so WebKit
@@ -92,8 +105,12 @@ export function RefractingLens({
           willChange: 'transform',
           zIndex,
           pointerEvents: 'none',
-          clipPath: `inset(${margin}px round ${paneRadius}px)`,
-          WebkitClipPath: `inset(${margin}px round ${paneRadius}px)`,
+          ...(useMask
+            ? boxMask
+            : {
+                clipPath: `inset(${margin}px round ${paneRadius}px)`,
+                WebkitClipPath: `inset(${margin}px round ${paneRadius}px)`,
+              }),
         }}
       >
         <div
@@ -141,6 +158,7 @@ export function RefractingLens({
           willChange: 'transform',
           zIndex: zIndex + 1,
           ...openGlassOverlayStyle(material),
+          ...overlayMask,
           ...overlayStyle,
         }}
       />
