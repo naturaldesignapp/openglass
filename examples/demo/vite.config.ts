@@ -2,8 +2,8 @@ import { resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// Project pages live at https://<org>.github.io/openglass/ — set the base so
-// assets resolve under that subpath. Override with `--base=/` for local builds.
+// Production demo: https://openglass.vercel.app — base matches the `/openglass/`
+// subpath rewrite in vercel.json. Override with `--base=/` for a root deploy.
 export default defineConfig({
   base: '/openglass/',
   plugins: [react()],

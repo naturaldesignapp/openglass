@@ -5,13 +5,13 @@
   "type": "module",
   "license": "MIT",
   "author": "OpenGlass contributors",
-  "homepage": "https://github.com/naturaldesign/openglass#readme",
+  "homepage": "https://openglass.vercel.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/naturaldesign/openglass.git"
+    "url": "git+https://github.com/naturaldesignapp/openglass.git"
   },
   "bugs": {
-    "url": "https://github.com/naturaldesign/openglass/issues"
+    "url": "https://github.com/naturaldesignapp/openglass/issues"
   },
   "keywords": [
     "glass",

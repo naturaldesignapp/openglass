@@ -26,7 +26,8 @@ export interface OpenGlassFilterProps {
 
 /**
  * The SVG filter for an OpenGlass pane: displacement map + one displacement
- * pass (or three `screen`-blended passes when `chroma > 0`) + optional blur.
+ * pass (or three `screen`-blended passes when `chroma > 0`). Blur is not
+ * applied here — see the OpenGlass docs for the cross-engine blur approach.
  *
  * Render once per pane; the host element points at it with
  * `filter: url(#id)`. See the OpenGlass docs for the cross-browser layout

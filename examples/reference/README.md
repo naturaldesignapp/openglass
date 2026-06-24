@@ -16,5 +16,5 @@ to host the material in a real app.
 
 For a **runnable, self-contained** version of the lens pattern (no editor, no live
 DOM cloning — it refracts an aligned copy of a static backdrop), see
-[`../demo/src/GlassLens.tsx`](../demo/src/GlassLens.tsx). That's the code that
-powers the [live demo](https://naturaldesignapp.github.io/openglass/).
+[`../demo/src/RefractingLens.tsx`](../demo/src/RefractingLens.tsx). That's the code that
+powers the [live demo](https://openglass.vercel.app/).

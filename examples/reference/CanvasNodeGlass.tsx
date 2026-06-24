@@ -7,7 +7,7 @@
 // compile or run standalone. Kept here as a reference for the per-node host
 // pattern (in-stage rendering, backdrop pruning, polygon/ellipse clips).
 //
-// For a self-contained, runnable lens see `examples/demo/src/GlassLens.tsx`.
+// For a self-contained, runnable lens see `examples/demo/src/RefractingLens.tsx`.
 // ---------------------------------------------------------------------------
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {

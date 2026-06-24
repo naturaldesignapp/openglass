@@ -1,6 +1,6 @@
 # OpenGlass
 
-**[▶ Live demo](https://naturaldesignapp.github.io/openglass/)** — drag the lens, tune the material.
+**[▶ Live demo](https://openglass.vercel.app)** — drag the lens, tune the material.
 
 A portable **glass material** for the web. OpenGlass gives you the two pieces every
 glass/"liquid glass" effect needs and nothing you don't:
@@ -258,6 +258,9 @@ The material is a plain object. Every field, with its tuning range:
 - **`makeOpenGlassDisplacementMap(material, margin): string`** — builds the
   R/G-encoded displacement map as a `data:` URL sized to `pane + 2*margin`. Drives
   SVG `feDisplacementMap` or a WebGL shader. Requires a browser `canvas`.
+- **`makeOpenGlassShapeMap(material, margin, drawShape): string`** — same as above,
+  but bends along an arbitrary opaque silhouette painted by `drawShape` (logos,
+  glyphs, etc.). `dome` is not applied.
 - **`openGlassOverlayStyle(material): CSSProperties`** — the unfiltered rim ring +
   specular glare + shadows. Spread onto an absolutely-positioned overlay.
 - **`openGlassRadius(material): number`** — effective corner radius, clamped so
@@ -267,15 +270,84 @@ The material is a plain object. Every field, with its tuning range:
 
 ### Components
 
-- **`<OpenGlassFilter id material margin />`** — the SVG `<filter>` (displacement
-  map + one displacement pass, or three `screen`-blended passes when `chroma > 0`).
-  Render once per pane; the host points at it with `filter: url(#id)`.
+- **`<OpenGlassFilter id material margin mapUrl? />`** — the SVG `<filter>`
+  (displacement map + one displacement pass, or three `screen`-blended passes when
+  `chroma > 0`). Render once per pane; the host points at it with
+  `filter: url(#id)`.
 
   | Prop       | Type                | Notes |
   |------------|---------------------|-------|
   | `id`       | `string`            | Referenced as `filter: url(#id)`. Pass a fresh id to force a WebKit rebuild. |
   | `material` | `OpenGlassMaterial` | The material to render. |
   | `margin`   | `number`            | Extra content px around the pane fed to the filter. Must match the host box and the map. |
+  | `mapUrl`   | `string`            | Optional prebuilt map (e.g. from `makeOpenGlassShapeMap`) instead of the rounded-rect map. |
+
+- **`<OpenGlass material? margin? refract? behind? surfaceWidth? surfaceHeight? surfaceX? surfaceY? children? invalidateKey? />`** —
+  batteries-included lens. Owns the host layout, aligned refract copy, rim overlay,
+  and WebKit filter invalidation.
+
+  | Prop            | Type                         | Notes |
+  |-----------------|------------------------------|-------|
+  | `material`      | `Partial<OpenGlassMaterial>` | Merged over `OPEN_GLASS_DEFAULTS`. |
+  | `margin`        | `number`                     | Extra filter content px. @default `24` |
+  | `refract`       | `ReactNode`                  | Content to bend (a copy). Omit to refract `children` in place. |
+  | `behind`        | `string`                     | Opaque fill behind the copy. @default `'#ffffff'` |
+  | `surfaceWidth`  | `number`                     | Size of the refracted surface. Defaults to pane width. |
+  | `surfaceHeight` | `number`                     | Size of the refracted surface. Defaults to pane height. |
+  | `surfaceX`      | `number`                     | Lens top-left within the surface. @default `0` |
+  | `surfaceY`      | `number`                     | Lens top-left within the surface. @default `0` |
+  | `children`      | `ReactNode`                  | Crisp layer on top (when `refract` is set). |
+  | `invalidateKey` | `number \| string`           | Bump when the source moves — forces a WebKit filter re-run. |
+
+- **`<OpenGlassToggle checked? defaultChecked? onCheckedChange? disabled? name? value? aria-label width? height? trackColor? activeColor? surface? optics? forceExpanded? />`** —
+  macOS-style glass switch. Wraps a real `role="switch"` checkbox; controllable or
+  uncontrolled.
+
+  | Prop              | Type                         | Notes |
+  |-------------------|------------------------------|-------|
+  | `checked`         | `boolean`                    | Controlled on/off state. |
+  | `defaultChecked`  | `boolean`                    | Uncontrolled initial state. |
+  | `onCheckedChange` | `(checked) => void`          | Called when toggled. |
+  | `disabled`        | `boolean`                    | |
+  | `aria-label`      | `string`                     | Required for accessibility. |
+  | `width`           | `number`                     | Control width. @default `74` |
+  | `height`          | `number`                     | Control height. @default `28` |
+  | `trackColor`      | `string`                     | Resting track colour (opaque). |
+  | `activeColor`     | `string`                     | Track colour when on. |
+  | `surface`         | `string`                     | Background the lens refracts (opaque). |
+  | `optics`          | `Partial<OpenGlassMaterial>` | Glass thumb overrides. |
+  | `forceExpanded`   | `boolean`                    | Hold thumb bloomed open (demos/screenshots). |
+
+- **`<OpenGlassSlider value? defaultValue? onValueChange? min? max? step? disabled? width? thumbHeight? thumbWidth? height? name? aria-label trackColor? activeColor? surface? optics? forceExpanded? />`** —
+  macOS-style glass range slider. Wraps a real `<input type="range">`; controllable
+  or uncontrolled.
+
+  | Prop             | Type                         | Notes |
+  |------------------|------------------------------|-------|
+  | `value`          | `number`                     | Controlled value. |
+  | `defaultValue`   | `number`                     | Uncontrolled initial value. |
+  | `onValueChange`  | `(value) => void`            | Called on change. |
+  | `min`            | `number`                     | @default `0` |
+  | `max`            | `number`                     | @default `100` |
+  | `step`           | `number`                     | @default `1` |
+  | `disabled`       | `boolean`                    | |
+  | `aria-label`     | `string`                     | Required for accessibility. |
+  | `width`          | `number`                     | Track width. @default `240` |
+  | `thumbHeight`    | `number`                     | Handle height. @default `22` |
+  | `height`         | `number`                     | Visible track height. @default `6` |
+  | `trackColor`     | `string`                     | Track colour (opaque). |
+  | `activeColor`    | `string`                     | Fill colour. |
+  | `surface`        | `string`                     | Background the lens refracts (opaque). |
+  | `optics`         | `Partial<OpenGlassMaterial>` | Glass handle overrides. |
+  | `forceExpanded`  | `boolean`                    | Hold handle bloomed open (demos/screenshots). |
+
+### Advanced (custom controls)
+
+Lower-level exports for building your own glass controls:
+
+- **`<GlassControlLens />`** — animated lens over a control surface (used by the toggle and slider).
+- **`<GlassDiv />`** — transform-only `div` driven by motion values at 60fps.
+- **`glassValue`**, **`deriveGlass`**, **`animateGlassValue`**, **`useLensWobble`**, **`usePrefersReducedMotion`**, etc. — lightweight motion primitives (no external animation library).
 
 ---
 
@@ -293,8 +365,8 @@ for a smooth ramp.
 ## Examples
 
 - **[`examples/demo`](./examples/demo)** — the runnable Vite + React app behind the
-  [live demo](https://naturaldesignapp.github.io/openglass/): a draggable lens that
-  refracts a backdrop, with a live material tuner. Run it locally:
+  [live demo](https://openglass.vercel.app): a draggable lens that refracts a
+  backdrop, with a live material tuner. Run it locally:
 
   ```bash
   cd examples/demo
@@ -302,16 +374,17 @@ for a smooth ramp.
   bun run dev
   ```
 
-  Its [`src/GlassLens.tsx`](./examples/demo/src/GlassLens.tsx) is the clearest
-  self-contained implementation of the host pattern.
+  [`src/RefractingLens.tsx`](./examples/demo/src/RefractingLens.tsx) is the clearest
+  self-contained implementation of the host pattern (primitives level); the demo
+  also uses `<OpenGlass>` directly in the components section.
 
 - **[`examples/reference`](./examples/reference)** — the original editor hosts
   (`GlassLensDebug`, `CanvasNodeGlass`) OpenGlass was extracted from. Editor-coupled
   and not runnable standalone, kept as a reference for live-DOM clone sync, per-node
   glass, and the full WebKit handling.
 
-The demo deploys to GitHub Pages automatically on push to `main`
-(see [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml)).
+The demo deploys to [Vercel](https://openglass.vercel.app) on push to `main`
+(see [`vercel.json`](./vercel.json)).
 
 ---
 
