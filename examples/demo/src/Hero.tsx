@@ -12,6 +12,7 @@ const PEBBLE: OpenGlassMaterial = {
   depth: 41,
   curvature: 2.8,
   splay: -1,
+  dome: 0.45,
   chroma: 0.06,
   blur: 0,
   glow: 0.34,
@@ -21,31 +22,20 @@ const PEBBLE: OpenGlassMaterial = {
 
 export function Hero() {
   return (
-    <section
-      id="top"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1.15fr) minmax(300px, 0.85fr)',
-        gap: 'clamp(32px, 6vw, 88px)',
-        alignItems: 'center',
-        minHeight: 'min(680px, 82svh)',
-        padding: 'clamp(48px, 6vw, 92px) var(--nd-gutter) clamp(40px, 5vw, 72px)',
-      }}
-    >
+    <section id="top" className="og-hero">
       <div style={{ minWidth: 0 }}>
-        <p className="nd-kicker">OpenGlass · By Natural Design</p>
-        <h1 className="nd-display" style={{ marginTop: 16, maxWidth: 520, fontSize: 'clamp(36px, 5vw, 68px)', lineHeight: 1.02 }}>
-          A thousand years of glass
-          in one package.
+        <h1 className="nd-display" style={{ maxWidth: 520, fontSize: 'clamp(36px, 5vw, 68px)', lineHeight: 1.02 }}>
+          Open source glass
+          for the web.
         </h1>
         <p style={{ marginTop: 22, maxWidth: '46ch', fontSize: 'clamp(16px, 1.7vw, 20px)', lineHeight: 1.45, color: 'var(--nd-muted)' }}>
-          Scroll the history of glass beside the history of design. The very
-          material that tells the story refracts it live. Then tune it yourself.
+          Refract live DOM content with one material object and plain CSS. The
+          same pipeline runs in Chromium, Gecko, and WebKit.
         </p>
         <div style={{ marginTop: 30, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
           <CopyInstall variant="solid" />
-          <a className="nd-pill" href="#story" style={{ borderColor: 'var(--nd-hair)' }}>
-            Read the story
+          <a className="nd-pill" href="#try" style={{ borderColor: 'var(--nd-hair)' }}>
+            Try it
           </a>
         </div>
       </div>

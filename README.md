@@ -14,10 +14,12 @@ drive a React SVG filter, a WebGL renderer, or a tuning UI. The displacement map
 is the portable part — the idea comes from Aave's writeup
 [_Building Glass for the Web_](https://aave.com/blog).
 
-> **Scope.** This is a low-level library: it ships the `material` math and the
-> `<OpenGlassFilter>` SVG component. It does **not** ship a batteries-included
-> `<OpenGlass>` wrapper — you compose the host element yourself (a few lines,
-> shown below). A drop-in component is on the [roadmap](#roadmap).
+> **Scope.** OpenGlass ships at two levels. Reach for the **drop-in** when you
+> just want glass: `<OpenGlass>` owns the host layout (box sizing, clipping,
+> rim/glare overlay, the refract-a-copy path, and the WebKit filter rebuild),
+> and `<OpenGlassToggle>` / `<OpenGlassSlider>` are finished, accessible controls
+> built on it. Reach for the **primitives** (`material` + `<OpenGlassFilter>`)
+> when you want to own the host yourself. Both are shown below.
 
 ---
 
@@ -39,10 +41,67 @@ pnpm add openglass
 
 ---
 
-## Quick start
+## Quick start (drop-in)
 
-OpenGlass refracts whatever is **painted inside the filtered element**. The host
-element must follow three layout rules (explained in [Host layout](#host-layout-the-rules-that-matter)):
+`<OpenGlass>` is the batteries-included lens. Hand it the content to refract and
+it owns the rest. A **copy** of `refract` is bent, so it works in Chrome, Safari
+and Firefox; `children` render crisp on top.
+
+```tsx
+import { OpenGlass } from 'openglass'
+
+// A loupe floating over a photo. The lens copies the image and bends it; the
+// label stays sharp on top.
+;<OpenGlass
+  material={{ width: 160, height: 160, borderRadius: 80, scale: 24, dome: 0.5 }}
+  refract={<img src="/photo.jpg" width={640} height={400} alt="" />}
+  surfaceWidth={640}
+  surfaceHeight={400}
+  surfaceX={240}
+  surfaceY={120}
+  behind="#111"
+>
+  <span style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
+    Zoom
+  </span>
+</OpenGlass>
+```
+
+- **`refract`** is the content the lens bends (a copy). Omit it to bend the
+  `children` in place (e.g. glassify a hero).
+- **`surfaceWidth/Height`** size that copy and **`surfaceX/Y`** place the lens
+  over it — so a small lens can float over a big surface (a slider track, a
+  photo) with the refraction lined up under it.
+- **`material`** is a `Partial<OpenGlassMaterial>` merged over the defaults;
+  pass only what you change.
+- **`invalidateKey`** — bump it (or change `surfaceX/Y`) whenever the source
+  moves so WebKit re-runs the filter. The displacement map only depends on
+  shape, so moving the lens never rebuilds it.
+
+### Components
+
+Finished, accessible controls whose moving part is a real lens:
+
+```tsx
+import { OpenGlassToggle, OpenGlassSlider } from 'openglass'
+
+;<OpenGlassToggle checked={on} onCheckedChange={setOn} aria-label="Wi-Fi" />
+;<OpenGlassSlider value={v} onValueChange={setV} aria-label="Volume" />
+```
+
+`OpenGlassToggle` is a `role="switch"` whose glass thumb slides and bends the
+track through it. `OpenGlassSlider` is a `role="slider"` (drag, click, arrow /
+Page / Home / End keys) whose handle refracts the fill beneath it. Both are
+controllable or uncontrolled, honour `prefers-reduced-motion`, and take an
+`optics` prop to restyle the glass.
+
+---
+
+## Quick start (primitives)
+
+For full control over the host, drive the filter yourself. OpenGlass refracts
+whatever is **painted inside the filtered element**. The host element must follow
+three layout rules (explained in [Host layout](#host-layout-the-rules-that-matter)):
 
 ```tsx
 import { useId } from 'react'
@@ -181,6 +240,7 @@ The material is a plain object. Every field, with its tuning range:
 | `depth`         | px     | `41`    | 2…120        | Width of the refracting bevel band, inward from the edge. |
 | `curvature`     | —      | `2.8`   | 0.5…6        | Bevel profile exponent; higher concentrates the bend at the edge. |
 | `splay`         | —      | `-1`    | -1…1         | Bend direction: `-1` pinches the rim (magnifies centre), `+1` bulges out. |
+| `dome`          | —      | `0.4`   | 0…1          | Convex spherical-cap magnification of the body — the "liquid" middle. `0` = a flat window that only bends at the rim; `1` = a full hemisphere dome. |
 | `chroma`        | —      | `0.06`  | 0…1          | Chromatic aberration as a fraction of `scale`. `0` = off. |
 | `blur`          | px     | `0`     | 0…8          | Post-displacement blur. Apply to the **source DOM**, not the filter. |
 | `glow`          | 0…1    | `0.3`   | 0…1          | Directional specular glare intensity. |
@@ -257,8 +317,10 @@ The demo deploys to GitHub Pages automatically on push to `main`
 
 ## Roadmap
 
-- A batteries-included `<OpenGlass>` component that owns the host pattern
-  (box sizing, clipping, overlay, WebKit id rebuild, backdrop clone sync).
+- ~~A batteries-included `<OpenGlass>` component that owns the host pattern.~~
+  ✅ Shipped — see [Quick start (drop-in)](#quick-start-drop-in).
+- More finished components built on `<OpenGlass>` (the [switch and
+  slider](#components) are the first two).
 - A WebGL renderer that consumes the same displacement map.
 
 ---

@@ -13,14 +13,14 @@ export function SiteHeader() {
         <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--nd-ink)', letterSpacing: '-0.01em' }}>OpenGlass</span>
       </a>
 
-      <nav aria-label="Sections" style={{ display: 'flex', justifyContent: 'center', gap: 4 }}>
+      <nav className="nd-header-nav" aria-label="Sections" style={{ display: 'flex', justifyContent: 'center', gap: 4 }}>
         <a className="nd-pill" href="#try">Try it</a>
         <a className="nd-pill" href="#story">Story</a>
         <a className="nd-pill" href="#material">Material</a>
       </nav>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 10 }}>
-        <a className="nd-pill" href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
+        <a className="nd-pill nd-header-ghost" href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
         <CopyInstall variant="solid" />
       </div>
     </header>

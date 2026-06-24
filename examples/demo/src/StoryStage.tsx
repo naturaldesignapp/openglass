@@ -70,6 +70,7 @@ function Track({
         return (
           <div
             key={beat.title}
+            className="og-beat"
             aria-hidden={dist > 0.5}
             style={{
               position: 'absolute',
@@ -77,7 +78,6 @@ function Track({
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
-              padding: '0 clamp(20px, 4cqw, 64px)',
               textAlign: align,
               alignItems: align === 'left' ? 'flex-start' : 'flex-end',
               transform: `translate3d(0, ${offset * 48}vh, 0)`,
@@ -85,15 +85,14 @@ function Track({
               willChange: 'transform, opacity',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: yearColor, fontSize: 'clamp(11px, 1.4cqw, 14px)', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 14 }}>
+            <div className="og-beat-year" style={{ display: 'flex', alignItems: 'center', gap: 12, color: yearColor, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 14 }}>
               <span style={{ width: 22, height: 1, background: yearColor, opacity: 0.6, order: align === 'right' ? 2 : 0 }} />
               <span>{beat.year}</span>
             </div>
             <h3
-              className="nd-display"
+              className="nd-display og-beat-title"
               style={{
                 fontFamily: ERA_FONT[beat.font],
-                fontSize: 'clamp(30px, 11cqw, 92px)',
                 lineHeight: 0.98,
                 fontWeight: beatWeight(beat),
                 letterSpacing: beat.upper ? '0.02em' : '-0.012em',
@@ -104,10 +103,10 @@ function Track({
               {beat.title}
             </h3>
             <p
+              className="og-beat-body"
               style={{
                 margin: '18px 0 0',
                 maxWidth: '34ch',
-                fontSize: 'clamp(13px, 3.4cqw, 17px)',
                 lineHeight: 1.5,
                 color: bodyColor,
               }}
@@ -129,6 +128,7 @@ const CLOSE_MATERIAL: OpenGlassMaterial = {
   depth: 41,
   curvature: 2.8,
   splay: -1,
+  dome: 0.45,
   chroma: 0.06,
   blur: 0,
   glow: 0.34,

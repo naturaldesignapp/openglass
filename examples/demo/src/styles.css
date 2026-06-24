@@ -356,3 +356,128 @@ body {
   background: var(--nd-panel);
   border-color: rgba(8, 9, 10, 0.26);
 }
+
+/* ===========================================================================
+ * Section layouts — kept as classes (not inline) so the responsive breakpoints
+ * below can override them. Inline styles win over the cascade, so any property
+ * that needs a mobile variant lives here.
+ * ======================================================================== */
+
+/* Hero — text + canvas, side by side on desktop. */
+.og-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+  gap: clamp(32px, 6vw, 88px);
+  align-items: center;
+  min-height: min(680px, 82svh);
+  padding: clamp(48px, 6vw, 92px) var(--nd-gutter) clamp(40px, 5vw, 72px);
+}
+
+/* Try it — picker rail · stage · tuner. */
+.og-try-grid {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(360px, 440px);
+  gap: clamp(16px, 2.4vw, 32px);
+  align-items: start;
+}
+
+.og-try-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* How it works — 2×2 step grid. */
+.og-steps {
+  list-style: none;
+  margin: clamp(36px, 5vw, 64px) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--nd-hair);
+  border: 1px solid var(--nd-hair);
+}
+
+/* Story beats — type scales to its column via container queries; these hold the
+ * desktop clamps so the mobile breakpoint can lower the floors. */
+.og-beat {
+  padding: 0 clamp(20px, 4cqw, 64px);
+}
+.og-beat-year {
+  font-size: clamp(11px, 1.4cqw, 14px);
+}
+.og-beat-title {
+  font-size: clamp(30px, 11cqw, 92px);
+}
+.og-beat-body {
+  font-size: clamp(13px, 3.4cqw, 17px);
+}
+
+/* === Breakpoints ======================================================== */
+
+/* Header: drop the centred section nav once it crowds the actions. */
+@media (max-width: 760px) {
+  .nd-header {
+    grid-template-columns: 1fr auto;
+  }
+  .nd-header-nav {
+    display: none !important;
+  }
+}
+
+@media (max-width: 460px) {
+  .nd-header-ghost {
+    display: none !important;
+  }
+}
+
+/* Hero stacks. */
+@media (max-width: 860px) {
+  .og-hero {
+    grid-template-columns: 1fr;
+    gap: clamp(28px, 8vw, 48px);
+    min-height: 0;
+  }
+}
+
+/* Try it: tuner drops below the stage, then the picker goes horizontal. */
+@media (max-width: 980px) {
+  .og-try-grid {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .og-try-tuner {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .og-try-grid {
+    grid-template-columns: 1fr;
+  }
+  .og-try-picker {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+/* Steps stack. */
+@media (max-width: 720px) {
+  .og-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Story: tighten padding and lower the type floors so the narrow column reads
+ * instead of clipping on small screens. */
+@media (max-width: 640px) {
+  .og-beat {
+    padding: 0 clamp(12px, 4cqw, 24px);
+  }
+  .og-beat-title {
+    font-size: clamp(20px, 12cqw, 56px);
+  }
+  .og-beat-body {
+    font-size: clamp(12px, 3.4cqw, 15px);
+  }
+}

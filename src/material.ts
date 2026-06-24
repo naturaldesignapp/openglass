@@ -30,6 +30,13 @@ export interface OpenGlassMaterial {
   curvature: number
   /** Bend direction/amount: -1 pinches the rim (magnifies centre), +1 bulges outward. */
   splay: number
+  /**
+   * Convex spherical-cap magnification of the body — the "liquid" middle of
+   * real glass, 0..1. `0` is a flat window that only bends at the rim; `1` is a
+   * full hemisphere dome that magnifies the centre. Layered on top of the rim
+   * bevel (`depth`/`curvature`/`splay`), it gives the lens true lens-like depth.
+   */
+  dome: number
   /** Chromatic aberration as a fraction of `scale`. 0 = off. */
   chroma: number
   /** Post-displacement blur in px. 0 = off. */
@@ -51,6 +58,7 @@ export const OPEN_GLASS_DEFAULTS: OpenGlassMaterial = {
   depth: 41,
   curvature: 2.8,
   splay: -1,
+  dome: 0.4,
   chroma: 0.06,
   blur: 0,
   glow: 0.3,
@@ -76,6 +84,7 @@ export const OPEN_GLASS_PARAMS: readonly OpenGlassParam[] = [
   { key: 'depth', label: 'Depth', min: 2, max: 120, decimals: 0 },
   { key: 'curvature', label: 'Curvature', min: 0.5, max: 6, decimals: 2 },
   { key: 'splay', label: 'Splay', min: -1, max: 1, decimals: 2 },
+  { key: 'dome', label: 'Dome', min: 0, max: 1, decimals: 2 },
   { key: 'chroma', label: 'Chroma', min: 0, max: 1, decimals: 2 },
   { key: 'blur', label: 'Blur', min: 0, max: 8, decimals: 1 },
   { key: 'glow', label: 'Glow', min: 0, max: 1, decimals: 2 },
@@ -134,6 +143,19 @@ export function makeOpenGlassDisplacementMap(material: OpenGlassMaterial, margin
   const depth = Math.max(material.depth, 0.001) * ss
   const { splay, curvature } = material
 
+  // Spherical-cap dome (the convex "liquid" body). The cap height is `dome` ×
+  // the half-extent; from chord half-width `a` and cap height `h` the sphere
+  // radius is R = (a² + h²) / 2h. We sample the dome gradient per axis and
+  // normalise it to 1 at the rim, so `dome` alone sets the amount of bulge while
+  // `scale` (the filter) sets the px amplitude. 4-fold symmetric like the bevel.
+  const dome = Math.max(0, material.dome)
+  const domeCapX = dome > 0 ? Math.max(0.01, Math.min(dome * bx, bx - 1)) : 0
+  const domeCapY = dome > 0 ? Math.max(0.01, Math.min(dome * by, by - 1)) : 0
+  const domeRx = domeCapX > 0 ? (bx * bx + domeCapX * domeCapX) / (2 * domeCapX) : 0
+  const domeRy = domeCapY > 0 ? (by * by + domeCapY * domeCapY) / (2 * domeCapY) : 0
+  const domeEdgeX = domeRx > bx ? bx / Math.sqrt(domeRx * domeRx - bx * bx) : 0
+  const domeEdgeY = domeRy > by ? by / Math.sqrt(domeRy * domeRy - by * by) : 0
+
   // The map is 4-fold symmetric, so compute only the top-left quadrant and
   // mirror it with sign flips on the R/G offsets (Aave optimization).
   const halfW = Math.ceil(resW / 2)
@@ -148,21 +170,35 @@ export function makeOpenGlassDisplacementMap(material: OpenGlassMaterial, margin
       const qx = px - (bx - radius)
       const qy = py - (by - radius)
 
+      // Body dome — per-axis convex magnification, only inside the pane bounds.
+      // It magnifies the centre (the splay=-1 sense), so it adds positively to
+      // the absolute-quadrant offset like the rim bevel does.
       let offsetX = 0
       let offsetY = 0
+      if (dome > 0 && px < bx && py < by) {
+        offsetX = dome * domeAxis(px, domeRx, domeEdgeX)
+        offsetY = dome * domeAxis(py, domeRy, domeEdgeY)
+      }
+
       if (qx > 0 && qy > 0) {
         // Rounded-corner arc — and the entire area of a circle/ellipse, whose
         // corner zone covers the whole quadrant. Bend radially out of the arc
         // centre so the refraction follows the curve.
         const len = Math.hypot(qx, qy)
-        const inward = radius - len
-        if (len < radius && inward < depth) {
-          const magnitude = splay * Math.pow(1 - inward / depth, curvature)
-          const dirX = len > 0 ? qx / len : Math.SQRT1_2
-          const dirY = len > 0 ? qy / len : Math.SQRT1_2
-          // Quadrant coords are absolute; the outward normal points toward -x/-y.
-          offsetX = -dirX * magnitude
-          offsetY = -dirY * magnitude
+        if (len < radius) {
+          const inward = radius - len
+          if (inward < depth) {
+            const magnitude = splay * Math.pow(1 - inward / depth, curvature)
+            const dirX = len > 0 ? qx / len : Math.SQRT1_2
+            const dirY = len > 0 ? qy / len : Math.SQRT1_2
+            // Quadrant coords are absolute; the outward normal points toward -x/-y.
+            offsetX += -dirX * magnitude
+            offsetY += -dirY * magnitude
+          }
+        } else {
+          // The rounded-corner cutout is outside the shape — stay neutral.
+          offsetX = 0
+          offsetY = 0
         }
       } else {
         // Flat edges and interior. Bend each axis independently by its own
@@ -172,8 +208,8 @@ export function makeOpenGlassDisplacementMap(material: OpenGlassMaterial, margin
         // corners no longer show a hard seam shooting in from each corner.
         const inX = bx - px
         const inY = by - py
-        if (inX > 0 && inX < depth) offsetX = -splay * Math.pow(1 - inX / depth, curvature)
-        if (inY > 0 && inY < depth) offsetY = -splay * Math.pow(1 - inY / depth, curvature)
+        if (inX > 0 && inX < depth) offsetX += -splay * Math.pow(1 - inX / depth, curvature)
+        if (inY > 0 && inY < depth) offsetY += -splay * Math.pow(1 - inY / depth, curvature)
       }
 
       const rPos = clampByte(128 + offsetX * 127)
@@ -238,6 +274,18 @@ function writeMapPixel(
   data[i + 1] = g
   data[i + 2] = 128
   data[i + 3] = 255
+}
+
+/**
+ * Spherical-cap dome gradient along one axis, normalised to 1 at the rim:
+ * `x / √(R² − x²)` is the slope of a sphere of radius `R`, which is 0 at the
+ * centre and rises toward the edge — the convex lens profile. `edgeGrad` is that
+ * slope at the half-extent, so the result is 0 at the centre and 1 at the rim.
+ */
+function domeAxis(p: number, R: number, edgeGrad: number): number {
+  if (edgeGrad <= 0 || R <= 0) return 0
+  const inside = Math.min(p, R * (1 - 1e-3))
+  return inside / Math.sqrt(R * R - inside * inside) / edgeGrad
 }
 
 function clampByte(value: number): number {

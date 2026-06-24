@@ -24,7 +24,7 @@ interface CopyInstallProps {
   variant?: 'solid' | 'ghost'
 }
 
-/** The package install command as a click-to-copy pill (tick + "Copied"). */
+/** Click-to-copy install command pill (shows "Copy command", then "Copied"). */
 export function CopyInstall({ variant = 'solid' }: CopyInstallProps) {
   const [copied, setCopied] = useState(false)
 
@@ -42,7 +42,6 @@ export function CopyInstall({ variant = 'solid' }: CopyInstallProps) {
       className={`nd-pill ${variant === 'solid' ? 'nd-pill-solid' : ''}`}
       style={{
         gap: 9,
-        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
         fontSize: 13.5,
         paddingInline: 16,
         ...(variant === 'ghost' ? { border: '1px solid var(--nd-hair)' } : null),
@@ -51,7 +50,7 @@ export function CopyInstall({ variant = 'solid' }: CopyInstallProps) {
       <span style={{ display: 'inline-flex', color: copied ? '#7ee787' : 'inherit' }}>
         {copied ? <CheckIcon /> : <CopyIcon />}
       </span>
-      <span style={{ fontVariantNumeric: 'tabular-nums' }}>{copied ? 'Copied' : INSTALL}</span>
+      <span>{copied ? 'Copied' : 'Copy command'}</span>
     </button>
   )
 }

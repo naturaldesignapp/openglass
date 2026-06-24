@@ -60,7 +60,7 @@ export function TryItSection() {
 
   const filterId = useMemo(
     () => `og-try-${epoch}`,
-    [material.width, material.height, material.borderRadius, material.depth, material.curvature, material.splay, epoch],
+    [material.width, material.height, material.borderRadius, material.depth, material.curvature, material.splay, material.dome, epoch],
   )
 
   const maxX = Math.max(0, box.w - material.width)
@@ -103,22 +103,16 @@ export function TryItSection() {
 
   return (
     <section id="try" style={{ padding: 'clamp(64px, 8vw, 112px) var(--nd-gutter)' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 'clamp(28px, 4vw, 44px)' }}>
-        <div>
-          <p className="nd-kicker">Try it</p>
-          <h2 className="nd-display" style={{ marginTop: 14, maxWidth: 620, fontSize: 'clamp(28px, 3.6vw, 46px)' }}>
-            Drag the lens. Tune the glass.
-          </h2>
-        </div>
-        <p className="nd-measure" style={{ maxWidth: '38ch', margin: 0, color: 'var(--nd-muted)', fontSize: 15, lineHeight: 1.5 }}>
-          Switch the artwork with the numbers, drag the lens across it, and every
-          control maps to a field on the same material object you pass in code.
-        </p>
+      <div style={{ marginBottom: 'clamp(28px, 4vw, 44px)' }}>
+        <p className="nd-kicker">Try it</p>
+        <h2 className="nd-display" style={{ marginTop: 14, maxWidth: 620, fontSize: 'clamp(28px, 3.6vw, 46px)' }}>
+          Drag the lens. Tune the glass.
+        </h2>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) minmax(360px, 440px)', gap: 'clamp(16px, 2.4vw, 32px)', alignItems: 'start' }}>
+      <div className="og-try-grid">
         {/* Image picker rail. */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }} role="group" aria-label="Choose artwork">
+        <div className="og-try-picker" role="group" aria-label="Choose artwork">
           {IMAGES.map((img, i) => (
             <button
               key={img.src}
@@ -159,7 +153,7 @@ export function TryItSection() {
                 sceneHeight={box.h}
                 baseColor="#0b0b0d"
                 renderScene={() => <ImageScene src={current.src} />}
-                invalidateKey={`${imageIndex},${Math.round(paneX)},${Math.round(paneY)},${material.width},${material.scale},${material.chroma}`}
+                invalidateKey={`${imageIndex},${Math.round(paneX)},${Math.round(paneY)},${material.width},${material.scale},${material.chroma},${material.dome}`}
                 zIndex={10}
                 overlayStyle={{ cursor: 'grab', touchAction: 'none' }}
                 onOverlayPointerDown={onDragPointerDown}
@@ -172,7 +166,7 @@ export function TryItSection() {
           </div>
         </div>
 
-        <GlassTuner material={material} onChange={setMaterial} />
+        <GlassTuner material={material} onChange={setMaterial} className="og-try-tuner" />
       </div>
     </section>
   )

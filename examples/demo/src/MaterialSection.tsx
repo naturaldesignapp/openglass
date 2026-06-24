@@ -47,18 +47,7 @@ export function MaterialSection() {
         order they run.
       </p>
 
-      <ol
-        style={{
-          listStyle: 'none',
-          margin: 'clamp(36px, 5vw, 64px) 0 0',
-          padding: 0,
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          gap: 1,
-          background: 'var(--nd-hair)',
-          border: '1px solid var(--nd-hair)',
-        }}
-      >
+      <ol className="og-steps">
         {STEPS.map((step) => (
           <li key={step.n} style={{ padding: 'clamp(22px, 2.6vw, 34px)', background: '#fff' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 16 }}>

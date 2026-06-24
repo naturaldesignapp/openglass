@@ -5,10 +5,11 @@ import { Slider } from './Slider'
 interface GlassTunerProps {
   material: OpenGlassMaterial
   onChange: (next: OpenGlassMaterial) => void
+  className?: string
 }
 
 /** Live material editor — one slider per OPEN_GLASS_PARAM. ND card styling. */
-export function GlassTuner({ material, onChange }: GlassTunerProps) {
+export function GlassTuner({ material, onChange, className }: GlassTunerProps) {
   const [copied, setCopied] = useState(false)
 
   const copyValues = () => {
@@ -19,6 +20,7 @@ export function GlassTuner({ material, onChange }: GlassTunerProps) {
 
   return (
     <div
+      className={className}
       style={{
         padding: 22,
         borderRadius: 12,

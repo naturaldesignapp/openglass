@@ -2,6 +2,10 @@ import { describe, expect, test } from 'bun:test'
 import {
   OPEN_GLASS_DEFAULTS,
   OPEN_GLASS_PARAMS,
+  OpenGlass,
+  OpenGlassFilter,
+  OpenGlassSlider,
+  OpenGlassToggle,
   openGlassOverlayStyle,
   openGlassRadius,
   type OpenGlassMaterial,
@@ -55,6 +59,19 @@ describe('material constants', () => {
       const value = OPEN_GLASS_DEFAULTS[param.key]
       expect(value).toBeGreaterThanOrEqual(param.min)
       expect(value).toBeLessThanOrEqual(param.max)
+    }
+  })
+
+  test('exposes the dome optic', () => {
+    expect(OPEN_GLASS_PARAMS.some((param) => param.key === 'dome')).toBe(true)
+    expect(typeof OPEN_GLASS_DEFAULTS.dome).toBe('number')
+  })
+})
+
+describe('public components', () => {
+  test('the drop-in and controls are exported as components', () => {
+    for (const component of [OpenGlass, OpenGlassFilter, OpenGlassToggle, OpenGlassSlider]) {
+      expect(typeof component).toBe('function')
     }
   })
 })
