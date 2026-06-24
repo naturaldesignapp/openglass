@@ -1,6 +1,6 @@
 # OpenGlass
 
-**[▶ Live demo](https://openglass.vercel.app)** — drag the lens, tune the material.
+**[▶ Live demo](https://openglass-one.vercel.app)** — drag the lens, tune the material.
 
 A portable **glass material** for the web. OpenGlass gives you the two pieces every
 glass/"liquid glass" effect needs and nothing you don't:
