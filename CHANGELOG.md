@@ -6,6 +6,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `OpenGlassToggle.onCheckedChange` now receives backward-compatible interaction details identifying input and drag commits.
+- `OpenGlassToggle.onDragCheckedChange` for feedback synchronized to drag midpoint transitions without firing for click or keyboard toggles.
+- `OpenGlassToggle.thumbInset` for tuning the resting pill size without changing the outer control dimensions.
+- Added signed `bodyZoom` for body minification independently of `dome` shape and rim `splay`.
+
 ## [0.1.0]
 
 ### Added

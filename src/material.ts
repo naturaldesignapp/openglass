@@ -30,13 +30,13 @@ export interface OpenGlassMaterial {
   curvature: number
   /** Bend direction/amount: -1 pinches the rim (magnifies centre), +1 bulges outward. */
   splay: number
-  /**
-   * Convex spherical-cap magnification of the body — the "liquid" middle of
-   * real glass, 0..1. `0` is a flat window that only bends at the rim; `1` is a
-   * full hemisphere dome that magnifies the centre. Layered on top of the rim
-   * bevel (`depth`/`curvature`/`splay`), it gives the lens true lens-like depth.
-   */
+  /** Spherical-cap curvature of the body, 0..1. */
   dome: number
+  /**
+   * Signed body zoom, -1..1. Positive values magnify and negative values
+   * minimize. When omitted, falls back to `dome` for backward compatibility.
+   */
+  bodyZoom?: number
   /** Chromatic aberration as a fraction of `scale`. 0 = off. */
   chroma: number
   /** Post-displacement blur in px. 0 = off. */
@@ -50,7 +50,7 @@ export interface OpenGlassMaterial {
 }
 
 /** The dialled-in default material (circular lens). */
-export const OPEN_GLASS_DEFAULTS: OpenGlassMaterial = {
+export const OPEN_GLASS_DEFAULTS: OpenGlassMaterial & { bodyZoom: number } = {
   width: 240,
   height: 240,
   borderRadius: 120,
@@ -59,6 +59,7 @@ export const OPEN_GLASS_DEFAULTS: OpenGlassMaterial = {
   curvature: 2.8,
   splay: -1,
   dome: 0.4,
+  bodyZoom: 0.4,
   chroma: 0.06,
   blur: 0,
   glow: 0.3,
@@ -85,6 +86,7 @@ export const OPEN_GLASS_PARAMS: readonly OpenGlassParam[] = [
   { key: 'curvature', label: 'Curvature', min: 0.5, max: 6, decimals: 2 },
   { key: 'splay', label: 'Splay', min: -1, max: 1, decimals: 2 },
   { key: 'dome', label: 'Dome', min: 0, max: 1, decimals: 2 },
+  { key: 'bodyZoom', label: 'Body Zoom', min: -1, max: 1, decimals: 2 },
   { key: 'chroma', label: 'Chroma', min: 0, max: 1, decimals: 2 },
   { key: 'blur', label: 'Blur', min: 0, max: 8, decimals: 1 },
   { key: 'glow', label: 'Glow', min: 0, max: 1, decimals: 2 },
@@ -143,12 +145,11 @@ export function makeOpenGlassDisplacementMap(material: OpenGlassMaterial, margin
   const depth = Math.max(material.depth, 0.001) * ss
   const { splay, curvature } = material
 
-  // Spherical-cap dome (the convex "liquid" body). The cap height is `dome` ×
-  // the half-extent; from chord half-width `a` and cap height `h` the sphere
-  // radius is R = (a² + h²) / 2h. We sample the dome gradient per axis and
-  // normalise it to 1 at the rim, so `dome` alone sets the amount of bulge while
-  // `scale` (the filter) sets the px amplitude. 4-fold symmetric like the bevel.
-  const dome = Math.max(0, material.dome)
+  // Dome controls the spherical profile; bodyZoom independently controls its
+  // direction and amplitude. Falling back to dome preserves pre-bodyZoom
+  // materials, where dome implied positive magnification.
+  const dome = Math.max(0, Math.min(1, material.dome))
+  const bodyZoom = Math.max(-1, Math.min(1, material.bodyZoom ?? dome))
   const domeCapX = dome > 0 ? Math.max(0.01, Math.min(dome * bx, bx - 1)) : 0
   const domeCapY = dome > 0 ? Math.max(0.01, Math.min(dome * by, by - 1)) : 0
   const domeRx = domeCapX > 0 ? (bx * bx + domeCapX * domeCapX) / (2 * domeCapX) : 0
@@ -170,14 +171,12 @@ export function makeOpenGlassDisplacementMap(material: OpenGlassMaterial, margin
       const qx = px - (bx - radius)
       const qy = py - (by - radius)
 
-      // Body dome — per-axis convex magnification, only inside the pane bounds.
-      // It magnifies the centre (the splay=-1 sense), so it adds positively to
-      // the absolute-quadrant offset like the rim bevel does.
+      // Body zoom — per-axis spherical sampling, only inside the pane bounds.
       let offsetX = 0
       let offsetY = 0
-      if (dome > 0 && px < bx && py < by) {
-        offsetX = dome * domeAxis(px, domeRx, domeEdgeX)
-        offsetY = dome * domeAxis(py, domeRy, domeEdgeY)
+      if (bodyZoom !== 0 && dome > 0 && px < bx && py < by) {
+        offsetX = bodyZoom * domeAxis(px, domeRx, domeEdgeX)
+        offsetY = bodyZoom * domeAxis(py, domeRy, domeEdgeY)
       }
 
       if (qx > 0 && qy > 0) {

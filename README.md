@@ -95,6 +95,24 @@ Page / Home / End keys) whose handle refracts the fill beneath it. Both are
 controllable or uncontrolled, honour `prefers-reduced-motion`, and take an
 `optics` prop to restyle the glass.
 
+`onCheckedChange` receives a second argument describing whether the committed
+change came from the normal checkbox input or a thumb drag:
+
+```tsx
+<OpenGlassToggle
+  checked={on}
+  onCheckedChange={(checked, details) => {
+    setOn(checked)
+    if (details.source === 'drag') {
+      // Haptic, sound, analytics, etc.
+    }
+  }}
+/>
+```
+
+Use `onDragCheckedChange` when feedback must instead occur at the exact moment
+an active drag crosses the on/off midpoint.
+
 ---
 
 ## Quick start (primitives)
@@ -240,7 +258,8 @@ The material is a plain object. Every field, with its tuning range:
 | `depth`         | px     | `41`    | 2…120        | Width of the refracting bevel band, inward from the edge. |
 | `curvature`     | —      | `2.8`   | 0.5…6        | Bevel profile exponent; higher concentrates the bend at the edge. |
 | `splay`         | —      | `-1`    | -1…1         | Bend direction: `-1` pinches the rim (magnifies centre), `+1` bulges out. |
-| `dome`          | —      | `0.4`   | 0…1          | Convex spherical-cap magnification of the body — the "liquid" middle. `0` = a flat window that only bends at the rim; `1` = a full hemisphere dome. |
+| `dome`          | —      | `0.4`   | 0…1          | Spherical-cap curvature of the body. |
+| `bodyZoom`      | —      | `0.4`   | -1…1         | Signed body zoom. Positive values magnify, negative values minimize. Independent of `dome` and `splay`. |
 | `chroma`        | —      | `0.06`  | 0…1          | Chromatic aberration as a fraction of `scale`. `0` = off. |
 | `blur`          | px     | `0`     | 0…8          | Post-displacement blur. Apply to the **source DOM**, not the filter. |
 | `glow`          | 0…1    | `0.3`   | 0…1          | Directional specular glare intensity. |
@@ -299,7 +318,7 @@ The material is a plain object. Every field, with its tuning range:
   | `children`      | `ReactNode`                  | Crisp layer on top (when `refract` is set). |
   | `invalidateKey` | `number \| string`           | Bump when the source moves — forces a WebKit filter re-run. |
 
-- **`<OpenGlassToggle checked? defaultChecked? onCheckedChange? disabled? name? value? aria-label width? height? trackColor? activeColor? surface? optics? forceExpanded? />`** —
+- **`<OpenGlassToggle checked? defaultChecked? onCheckedChange? onDragCheckedChange? disabled? name? value? aria-label width? height? thumbInset? trackColor? activeColor? surface? optics? forceExpanded? />`** —
   macOS-style glass switch. Wraps a real `role="switch"` checkbox; controllable or
   uncontrolled.
 
@@ -307,11 +326,13 @@ The material is a plain object. Every field, with its tuning range:
   |-------------------|------------------------------|-------|
   | `checked`         | `boolean`                    | Controlled on/off state. |
   | `defaultChecked`  | `boolean`                    | Uncontrolled initial state. |
-  | `onCheckedChange` | `(checked) => void`          | Called when toggled. |
+  | `onCheckedChange` | `(checked, details) => void` | Called when toggled; `details.source` is `'input'` or `'drag'`. |
+  | `onDragCheckedChange` | `(checked) => void`      | Called when an active drag crosses the on/off midpoint; excludes click and keyboard changes. |
   | `disabled`        | `boolean`                    | |
   | `aria-label`      | `string`                     | Required for accessibility. |
   | `width`           | `number`                     | Control width. @default `74` |
   | `height`          | `number`                     | Control height. @default `28` |
+  | `thumbInset`      | `number`                     | Gap between the resting thumb and track edge. @default `3` |
   | `trackColor`      | `string`                     | Resting track colour (opaque). |
   | `activeColor`     | `string`                     | Track colour when on. |
   | `surface`         | `string`                     | Background the lens refracts (opaque). |

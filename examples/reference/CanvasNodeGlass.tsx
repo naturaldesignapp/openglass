@@ -107,13 +107,15 @@ export function CanvasNodeGlass({ node, zoom }: CanvasNodeGlassProps) {
       depth: glass?.depth ?? 1,
       curvature: glass?.curvature ?? 1,
       splay: glass?.splay ?? 0,
+      dome: glass?.dome ?? OPEN_GLASS_DEFAULTS.dome,
+      bodyZoom: glass?.bodyZoom ?? glass?.dome ?? OPEN_GLASS_DEFAULTS.bodyZoom,
       chroma: glass?.chroma ?? 0,
       blur: glass?.blur ?? 0,
       glow: glass?.glow ?? 0,
       edgeHighlight: glass?.edgeHighlight ?? 0,
       specularAngle: glass?.specularAngle ?? 0,
     }),
-    [paneW, paneH, cornerRadius, glass?.scale, glass?.depth, glass?.curvature, glass?.splay, glass?.chroma, glass?.blur, glass?.glow, glass?.edgeHighlight, glass?.specularAngle],
+    [paneW, paneH, cornerRadius, glass?.scale, glass?.depth, glass?.curvature, glass?.splay, glass?.dome, glass?.bodyZoom, glass?.chroma, glass?.blur, glass?.glow, glass?.edgeHighlight, glass?.specularAngle],
   )
 
   const boxW = Math.round(material.width + MARGIN * 2)

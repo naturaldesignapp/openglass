@@ -46,16 +46,29 @@ const TOGGLE_OPTICS: Partial<OpenGlassMaterial> = {
   curvature: 2.6,
   splay: -1,
   dome: 0.06,
+  bodyZoom: 0.06,
   chroma: 0.18,
   glow: 0.45,
   edgeHighlight: 0.7,
   specularAngle: 325,
 }
 
+export interface OpenGlassToggleChangeDetails {
+  source: 'input' | 'drag'
+}
+
 export interface OpenGlassToggleProps {
   checked?: boolean
   defaultChecked?: boolean
-  onCheckedChange?: (checked: boolean) => void
+  onCheckedChange?: (
+    checked: boolean,
+    details: OpenGlassToggleChangeDetails,
+  ) => void
+  /**
+   * Called while an active thumb drag crosses the checked-state midpoint.
+   * Click and keyboard changes do not call this callback.
+   */
+  onDragCheckedChange?: (checked: boolean) => void
   disabled?: boolean
   name?: string
   value?: string
@@ -64,6 +77,8 @@ export interface OpenGlassToggleProps {
   width?: number
   /** Full control height. @default 28 */
   height?: number
+  /** Gap between the resting thumb and track edge. @default 3 */
+  thumbInset?: number
   /** Track colour at rest. Must be opaque. */
   trackColor?: string
   /** Track colour when on. */
@@ -87,12 +102,14 @@ export function OpenGlassToggle({
   checked,
   defaultChecked = false,
   onCheckedChange,
+  onDragCheckedChange,
   disabled,
   name,
   value,
   'aria-label': ariaLabel,
   width: S = 74,
   height: R = 28,
+  thumbInset = 3,
   trackColor = '#e2e2da',
   activeColor = '#2592fe',
   surface = '#fafaf6',
@@ -111,16 +128,16 @@ export function OpenGlassToggle({
 
   // Geometry — a wide pill thumb (not a circle) that floats above the track.
   const thumbW = Math.round(0.6 * S)
-  const thumbH = R - 6
-  const travel = S - thumbW - 6
+  const inset = Math.max(0, Math.min(thumbInset, R / 2 - 0.5))
+  const thumbH = R - inset * 2
+  const travel = S - thumbW - inset * 2
   const rubberLimit = S * 0.14
   const rubberRange = rubberLimit * 10
   const restRadius = thumbH / 2
-  // The refracted track copy is deliberately shorter than the real track so the
-  // bloomed lens (which is taller than this) has surface margin above/below to
-  // bend the pill edge through — that curved edge is what reads as refraction.
-  // A full-height copy fills the lens with flat colour and looks like nothing.
-  const refractionTrackH = Math.round(0.75 * R)
+  // Keep the refracted track close to the bloomed lens edge while preserving a
+  // narrow surface margin above/below. That margin lets the glass bend the pill
+  // edge just outside the button instead of filling the lens with flat colour.
+  const refractionTrackH = Math.max(1, R - 2)
   const lensWexp = BLOOM * thumbW
   const lensHexp = BLOOM * thumbH
   const margin = Math.ceil((optics?.scale ?? TOGGLE_OPTICS.scale ?? 6) + (optics?.depth ?? TOGGLE_OPTICS.depth ?? 8) + 6)
@@ -136,16 +153,16 @@ export function OpenGlassToggle({
 
   // Live geometry mirrored into refs so the once-created motion callbacks read
   // fresh values without re-subscribing.
-  const refs = useRef({ travel, thumbW, boxW, edge })
+  const refs = useRef({ travel, thumbW, boxW, edge, inset })
   useLayoutEffect(() => {
-    refs.current = { travel, thumbW, boxW, edge }
+    refs.current = { travel, thumbW, boxW, edge, inset }
   })
 
   const mv = useMemo(() => {
     const thumbX = glassValue(on ? travel : 0)
     const centerX = deriveGlass(
       [thumbX],
-      () => (refs.current.edge + 3 + refs.current.thumbW / 2 + thumbX.get()) / refs.current.boxW,
+      () => (refs.current.edge + refs.current.inset + refs.current.thumbW / 2 + thumbX.get()) / refs.current.boxW,
     )
     const lensW = glassValue(thumbW)
     const lensH = glassValue(thumbH)
@@ -215,6 +232,7 @@ export function OpenGlassToggle({
   const startClientXRef = useRef(0)
   const startThumbXRef = useRef(0)
   const movedRef = useRef(false)
+  const dragCheckedRef = useRef(on)
   const thumbAnimRef = useRef<GlassAnimation | null>(null)
 
   const releaseCapture = () => {
@@ -257,14 +275,17 @@ export function OpenGlassToggle({
     return mv.thumbX.on('change', apply)
   }, [mv.thumbX])
 
-  const commit = (next: boolean) => {
+  const commit = (
+    next: boolean,
+    details: OpenGlassToggleChangeDetails,
+  ) => {
     if (!isControlled) setInternal(next)
-    onCheckedChange?.(next)
+    onCheckedChange?.(next, details)
   }
 
   const handleChange = (next: boolean) => {
     if (suppressRef.current) return
-    commit(next)
+    commit(next, { source: 'input' })
     if (stateRef.current === 'idle') {
       stateRef.current = 'tap'
       expand(EXPAND_ANIM)
@@ -359,8 +380,8 @@ export function OpenGlassToggle({
         x={mv.thumbX}
         style={{
           position: 'absolute',
-          left: 3,
-          top: 3,
+          left: inset,
+          top: inset,
           width: thumbW,
           height: thumbH,
           touchAction: 'none',
@@ -375,6 +396,7 @@ export function OpenGlassToggle({
           startClientXRef.current = e.clientX
           startThumbXRef.current = mv.thumbX.get()
           movedRef.current = false
+          dragCheckedRef.current = on
           draggingRef.current = true
           suppressRef.current = true
           clearTimeout(holdTimeoutRef.current)
@@ -410,6 +432,12 @@ export function OpenGlassToggle({
           if (next < 0) next = -rubberBand(-next, rubberLimit, rubberRange)
           else if (next > travel) next = travel + rubberBand(next - travel, rubberLimit, rubberRange)
           mv.thumbX.set(next)
+          dragCheckedRef.current = updateOpenGlassToggleDragChecked(
+            dragCheckedRef.current,
+            next,
+            travel,
+            onDragCheckedChange,
+          )
         }}
         onPointerUp={(e) => {
           if (e.pointerId !== pointerIdRef.current) return
@@ -421,7 +449,7 @@ export function OpenGlassToggle({
             collapse(COLLAPSE_ANIM)
             const next = Math.max(0, Math.min(travel, mv.thumbX.get())) > travel / 2
             thumbAnimRef.current = animateGlassValue(mv.thumbX, next ? travel : 0, THUMB_ANIM)
-            if (next !== on) commit(next)
+            if (next !== on) commit(next, { source: 'drag' })
             requestAnimationFrame(() => (suppressRef.current = false))
           } else if (stateRef.current === 'pending' || stateRef.current === 'tap') {
             stateRef.current = 'tap'
@@ -462,6 +490,17 @@ export function OpenGlassToggle({
       />
     </label>
   )
+}
+
+export function updateOpenGlassToggleDragChecked(
+  current: boolean,
+  thumbX: number,
+  travel: number,
+  onChange?: (checked: boolean) => void,
+): boolean {
+  const next = Math.max(0, Math.min(travel, thumbX)) > travel / 2
+  if (next !== current) onChange?.(next)
+  return next
 }
 
 const visuallyHidden: CSSProperties = {

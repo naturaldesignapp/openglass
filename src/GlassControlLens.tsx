@@ -29,10 +29,20 @@ export interface GlassControlLensProps {
   radius: GlassMotionValue
   /** Optional squash-stretch from {@link useLensWobble}. */
   stretch?: GlassMotionValue
+  /** Width multiplier applied to `stretch`. @default -0.2 */
+  stretchWidthFactor?: number
+  /** Height multiplier applied to `stretch`. @default 0.4 */
+  stretchHeightFactor?: number
+  /** Optional lower bound for stretch, useful when spring overshoot is undesirable. */
+  stretchMin?: number
+  /** Optional upper bound for stretch. */
+  stretchMax?: number
 
   /** White-puck opacity: 1 at rest (solid pill), 0 when fully glass. */
   tintOpacity: GlassMotionValue
   tintColor?: string
+  /** Optional content shown over the solid resting tint, fading out with it. */
+  restContent?: ReactNode
   /** Expanded-lens drop shadow, crossfaded against the resting-puck shadow. */
   shadowOpacity: GlassMotionValue
   restShadowOpacity: GlassMotionValue
@@ -69,8 +79,13 @@ export function GlassControlLens({
   lensH,
   radius,
   stretch,
+  stretchWidthFactor = -0.2,
+  stretchHeightFactor = 0.4,
+  stretchMin = Number.NEGATIVE_INFINITY,
+  stretchMax = Number.POSITIVE_INFINITY,
   tintOpacity,
   tintColor = '#ffffff',
+  restContent,
   shadowOpacity,
   restShadowOpacity,
   edgeShadow,
@@ -90,6 +105,7 @@ export function GlassControlLens({
   const filterRef = useRef<SVGFilterElement>(null)
   const mapImgRef = useRef<SVGFEImageElement>(null)
   const tintRef = useRef<HTMLDivElement>(null)
+  const restContentRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
   const shadowRef = useRef<HTMLDivElement>(null)
   const restShadowRef = useRef<HTMLDivElement>(null)
@@ -148,7 +164,8 @@ export function GlassControlLens({
     let lastSig = ''
 
     const write = () => {
-      const st = stretch ? stretch.get() : 0
+      const rawStretch = stretch ? stretch.get() : 0
+      const st = Math.max(stretchMin, Math.min(stretchMax, rawStretch))
       // The MAP is keyed off the unstretched (base) size so the brief
       // squash-stretch wobble never regenerates it — regen only happens during
       // the bloom. (Per-frame regen thrashes feImage: shimmer in Blink, a dead
@@ -158,8 +175,8 @@ export function GlassControlLens({
       const baseR = Math.max(0, Math.min(radius.get(), Math.min(baseW, baseH) / 2))
       ensureMap(baseW, baseH, baseR)
 
-      const lw = Math.max(1, baseW * (1 - 0.2 * st))
-      const lh = Math.max(1, baseH * (1 + 0.4 * st))
+      const lw = Math.max(1, baseW * (1 + stretchWidthFactor * st))
+      const lh = Math.max(1, baseH * (1 + stretchHeightFactor * st))
       const r = Math.max(0, Math.min(baseR, Math.min(lw, lh) / 2))
       const cx = centerX.get() * boxW
       const cy = centerY * boxH
@@ -199,12 +216,15 @@ export function GlassControlLens({
         el.style.borderRadius = `${r}px`
       }
       place(tintRef.current)
+      place(restContentRef.current)
       place(overlayRef.current)
       place(shadowRef.current)
       place(restShadowRef.current)
 
       const t = tintOpacity.get()
+      if (refractionRef.current) refractionRef.current.style.opacity = String(1 - t)
       if (tintRef.current) tintRef.current.style.opacity = String(t)
+      if (restContentRef.current) restContentRef.current.style.opacity = String(t)
       if (overlayRef.current) overlayRef.current.style.opacity = String(1 - t)
       if (shadowRef.current) shadowRef.current.style.opacity = String(shadowOpacity.get())
       if (restShadowRef.current) restShadowRef.current.style.opacity = String(restShadowOpacity.get())
@@ -226,6 +246,10 @@ export function GlassControlLens({
     lensH,
     radius,
     stretch,
+    stretchWidthFactor,
+    stretchHeightFactor,
+    stretchMin,
+    stretchMax,
     tintOpacity,
     shadowOpacity,
     restShadowOpacity,
@@ -297,6 +321,25 @@ export function GlassControlLens({
 
       {/* Solid white puck — fades out as it blooms into glass. */}
       <div ref={tintRef} style={{ position: 'absolute', left: 0, top: 0, background: tintColor, willChange: 'transform, opacity' }} />
+
+      {restContent ? (
+        <div
+          ref={restContentRef}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            willChange: 'transform, opacity',
+          }}
+        >
+          {restContent}
+        </div>
+      ) : null}
 
       {/* Rim + specular glare — fades in as the puck becomes glass. */}
       <div ref={overlayRef} style={{ position: 'absolute', left: 0, top: 0, opacity: 0, willChange: 'transform, opacity', ...overlayStyle }} />

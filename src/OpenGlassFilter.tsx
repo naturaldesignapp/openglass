@@ -39,7 +39,7 @@ export function OpenGlassFilter({ id, material, margin, mapUrl }: OpenGlassFilte
   const generatedMap = useMemo(
     () => (mapUrl ? '' : makeOpenGlassDisplacementMap(material, margin)),
     // Only shape/bevel parameters live in the map; the rest are filter attrs.
-    [mapUrl, material.width, material.height, material.borderRadius, material.depth, material.curvature, material.splay, material.dome, margin],
+    [mapUrl, material.width, material.height, material.borderRadius, material.depth, material.curvature, material.splay, material.dome, material.bodyZoom, margin],
   )
   const map = mapUrl || generatedMap
   const baseScale = material.scale * 2

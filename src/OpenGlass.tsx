@@ -104,7 +104,7 @@ export function OpenGlass({
   // WebKit caches filter output by id; rotate it whenever the SHAPE/bevel
   // changes so a stale cached result can't show. Chromium keeps a stable id.
   const baseId = useId().replace(/:/g, '')
-  const shapeKey = `${paneW}|${paneH}|${material.borderRadius}|${material.depth}|${material.curvature}|${material.splay}|${material.dome}|${margin}`
+  const shapeKey = `${paneW}|${paneH}|${material.borderRadius}|${material.depth}|${material.curvature}|${material.splay}|${material.dome}|${material.bodyZoom}|${margin}`
   const filterId = useMemo(
     () => `og-${baseId}-${IS_WEBKIT ? Math.random().toString(36).slice(2) : 'f'}`,
     // shapeKey folds in every map input; baseId keeps ids unique per instance.

@@ -39,6 +39,7 @@ const MARK_MATERIAL: Omit<OpenGlassMaterial, 'width' | 'height'> = {
   curvature: 2.2,
   splay: -1,
   dome: 0,
+  bodyZoom: 0,
   chroma: 0.08,
   blur: 0,
   glow: 0.26,

@@ -359,7 +359,7 @@ function GlassLensTuner({ material, onChange }: GlassLensTunerProps) {
         }}
       >
         {OPEN_GLASS_PARAMS.map((param) => {
-          const value = material[param.key]
+          const value = material[param.key] ?? OPEN_GLASS_DEFAULTS[param.key]
           const factor = 10 ** param.decimals
           return (
             <div

@@ -43,7 +43,7 @@ export function GlassTuner({ material, onChange, className }: GlassTunerProps) {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', columnGap: 22, rowGap: 16 }}>
         {OPEN_GLASS_PARAMS.map((param) => {
-          const value = material[param.key]
+          const value = material[param.key] ?? OPEN_GLASS_DEFAULTS[param.key]
           const factor = 10 ** param.decimals
           return (
             <div key={param.key} style={{ display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }}>

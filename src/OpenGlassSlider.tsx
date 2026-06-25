@@ -35,6 +35,7 @@ const SLIDER_OPTICS: Partial<OpenGlassMaterial> = {
   curvature: 2.2,
   splay: -1,
   dome: 0.55,
+  bodyZoom: 0.55,
   chroma: 0.12,
   glow: 0.45,
   edgeHighlight: 0.7,

@@ -11,8 +11,24 @@ export {
 } from './material'
 export { OpenGlassFilter, type OpenGlassFilterProps } from './OpenGlassFilter'
 export { OpenGlass, type OpenGlassProps } from './OpenGlass'
-export { OpenGlassToggle, type OpenGlassToggleProps } from './OpenGlassToggle'
+export {
+  OpenGlassToggle,
+  type OpenGlassToggleChangeDetails,
+  type OpenGlassToggleProps,
+} from './OpenGlassToggle'
 export { OpenGlassSlider, type OpenGlassSliderProps } from './OpenGlassSlider'
+export {
+  OpenGlassTabSlider,
+  OPEN_GLASS_TAB_SLIDER_OPTICS,
+  OPEN_GLASS_TAB_SLIDER_TUNING,
+  buildOpenGlassTabMetrics,
+  nearestOpenGlassTabIndex,
+  type OpenGlassTabMetric,
+  type OpenGlassTabSliderChangeDetails,
+  type OpenGlassTabSliderItem,
+  type OpenGlassTabSliderProps,
+  type OpenGlassTabSliderTuning,
+} from './OpenGlassTabSlider'
 export { GlassControlLens, type GlassControlLensProps } from './GlassControlLens'
 export { GlassDiv, type GlassDivProps } from './GlassDiv'
 export {
